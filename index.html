@@ -48,6 +48,13 @@
         .q-info { font-size: 0.9rem; color: #ffd700; margin-bottom: 5px; }
         .q-text { text-align: left; font-size: 1.1rem; margin-bottom: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 15px; min-height: 50px; }
         .back-btn { background: #636e72 !important; margin-top: 10px; }
+
+        /* Admin Input Styling */
+        input, select, textarea {
+            width: 90%; padding: 10px; margin: 5px 0; border-radius: 10px; border: none; background: rgba(255,255,255,0.2); color: white;
+        }
+        ::placeholder { color: #ddd; }
+        .smart-paste-box { background: rgba(0, 210, 255, 0.1); border: 1px dashed #00d2ff; }
     </style>
 </head>
 <body>
@@ -84,6 +91,30 @@
         <button class="back-btn" onclick="showScreen('stream-page')">ወደ ኋላ</button>
     </div>
 
+    <div id="admin-upload-page" class="container hidden">
+        <h1 id="admin-sub-title">ጥያቄ መጫኛ</h1>
+        
+        <p style="font-size: 0.8rem; color: #00d2ff;">ከ PDF ኮፒ ያደረጉትን እዚህ ይለጥፉ</p>
+        <textarea id="smart-paste-input" class="smart-paste-box" placeholder="ምሳሌ፦ 1. What is... A) Opt1 B) Opt2..."></textarea>
+        <button onclick="autoExtractData()" style="background: #e67e22; width: 60%; font-size: 0.8rem;">Extract Data (አደራጅ)</button>
+        <hr style="width: 90%; border: 0.5px solid rgba(255,255,255,0.1); margin: 15px 0;">
+
+        <textarea id="admin-q-text" placeholder="ጥያቄው..."></textarea>
+        <input type="text" id="admin-optA" placeholder="ምርጫ A">
+        <input type="text" id="admin-optB" placeholder="ምርጫ B">
+        <input type="text" id="admin-optC" placeholder="ምርጫ C">
+        <input type="text" id="admin-optD" placeholder="ምርጫ D">
+        <select id="admin-correct">
+            <option value="">ትክክለኛ መልስ ይምረጡ</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+        </select>
+        <button onclick="saveAdminQuestion()" style="background: #27ae60;">Save Question</button>
+        <button class="back-btn" onclick="showScreen('subject-page')">ጨርስ / ተመለስ</button>
+    </div>
+
     <div id="exam-page" class="container hidden">
         <div id="timer">60:00</div>
         <div id="q-info-box" class="q-info"></div>
@@ -110,12 +141,17 @@
     </div>
 
     <script>
+        let questionsDB = {
+            "English": [], "Maths": [], "Physics": [], "Chemistry": [], "Biology": [],
+            "Geography": [], "History": [], "Economics": []
+        };
+
         let currentQuestions = [], currentIndex = 0, selectedAnswer = null, score = 0;
         let timeLeft = 3600; 
         let timerInterval;
         let isAdminMode = false;
+        let activeAdminSubject = "";
 
-        // መጀመሪያ Splash Screen ለ 4 ሰከንድ ይታያል
         setTimeout(() => showScreen('main-menu'), 4000);
 
         function showScreen(id) {
@@ -123,61 +159,83 @@
             document.getElementById(id).classList.remove('hidden');
         }
 
-        function studentFlow() {
-            isAdminMode = false;
-            showScreen('stream-page');
-        }
+        function studentFlow() { isAdminMode = false; showScreen('stream-page'); }
 
         function adminLoginFlow() {
             let pass = prompt("Admin Password ያስገቡ:");
-            if(pass === "Mertule Mariyam@2026") {
-                isAdminMode = true;
-                showScreen('stream-page');
-            } else {
-                alert("የተሳሳተ ፓስወርድ ነው!");
-            }
+            if(pass === "Mertule Mariyam@2026") { isAdminMode = true; showScreen('stream-page'); }
+            else alert("የተሳሳተ ፓስወርድ ነው!");
         }
 
         function selectStream(stream) {
             showScreen('subject-page');
             const list = document.getElementById('subject-list');
             list.innerHTML = "";
-            document.getElementById('subject-header').innerText = stream + " ዘርፍ ትምህርቶች";
-            
-            // Common Subjects (ለአድሚንም ለተማሪም በተመሳሳይ ቅደም ተከተል)
             let subjects = ["English", "Maths"];
-            if(stream === "Natural") {
-                subjects.push("Physics", "Chemistry", "Biology");
-            } else {
-                subjects.push("Geography", "History", "Economics");
-            }
+            if(stream === "Natural") subjects.push("Physics", "Chemistry", "Biology");
+            else subjects.push("Geography", "History", "Economics");
 
             subjects.forEach(sub => {
                 let btn = document.createElement('button');
                 btn.innerText = sub;
-                btn.onclick = () => {
-                    if(isAdminMode) {
-                        alert(sub + " ጥያቄዎችን ለማስተዳደር (በቅርቡ ይጠናቀቃል)");
-                    } else {
-                        startExam(sub);
-                    }
-                };
+                btn.onclick = () => { if(isAdminMode) openAdminPanel(sub); else startExam(sub); };
                 list.appendChild(btn);
             });
         }
 
+        function openAdminPanel(sub) {
+            activeAdminSubject = sub;
+            document.getElementById('admin-sub-title').innerText = sub + " ጥያቄ መጫኛ";
+            showScreen('admin-upload-page');
+        }
+
+        // --- SMART EXTRACTION LOGIC ---
+        function autoExtractData() {
+            const raw = document.getElementById('smart-paste-input').value;
+            if(!raw) return alert("መጀመሪያ ጽሑፉን ይለጥፉ!");
+
+            // Regex to find choices A, B, C, D
+            const parts = raw.split(/\s[A-D][\)\.\s]/i);
+            if(parts.length >= 5) {
+                document.getElementById('admin-q-text').value = parts[0].trim().replace(/^\d+[\.\)]\s*/, '');
+                document.getElementById('admin-optA').value = parts[1].trim();
+                document.getElementById('admin-optB').value = parts[2].trim();
+                document.getElementById('admin-optC').value = parts[3].trim();
+                document.getElementById('admin-optD').value = parts[4].trim();
+                alert("ዳታው በየሳጥኑ ተከፋፍሏል!");
+            } else {
+                alert("ጽሑፉን መለየት አልቻልኩም፤ እባክዎ ምርጫዎቹ በ A) B) C) D) መለየታቸውን ያረጋግጡ።");
+            }
+        }
+
+        function saveAdminQuestion() {
+            let q = document.getElementById('admin-q-text').value;
+            let a = document.getElementById('admin-optA').value;
+            let b = document.getElementById('admin-optB').value;
+            let c = document.getElementById('admin-optC').value;
+            let d = document.getElementById('admin-optD').value;
+            let correct = document.getElementById('admin-correct').value;
+
+            if(!q || !a || !b || !c || !d || !correct) return alert("ሁሉንም ይሙሉ!");
+
+            questionsDB[activeAdminSubject].push({ q, a, b, c, d, correct });
+            alert("ጥያቄው ተቀምጧል!");
+            
+            // Reset fields
+            document.getElementById('smart-paste-input').value = "";
+            document.getElementById('admin-q-text').value = "";
+            document.getElementById('admin-optA').value = "";
+            document.getElementById('admin-optB').value = "";
+            document.getElementById('admin-optC').value = "";
+            document.getElementById('admin-optD').value = "";
+            document.getElementById('admin-correct').value = "";
+        }
+
         function startExam(subject) {
-            // በምሳሌነት የቀረቡ ጥያቄዎች (እዚህ ጋር ጥያቄዎችን መጨመር ትችላለህ)
-            currentQuestions = [
-                { q: subject + " ጥያቄ 1: የዚህ ትምህርት ዋና ዓላማ ምንድነው?", a: "መረዳት", b: "መሸምደድ", c: "ማለፍ", d: "ማወቅ", correct: "A" },
-                { q: subject + " ጥያቄ 2: ፈተናውን ለመጨረስ ምን ያህል ጊዜ ይፈጃል?", a: "30 ደቂቃ", b: "1 ሰዓት", c: "2 ሰዓት", d: "10 ደቂቃ", correct: "B" }
-            ];
-            currentIndex = 0;
-            score = 0;
-            timeLeft = 3600; // ለፈተናው 1 ሰዓት ይሰጣል
-            showScreen('exam-page');
-            loadQuestion();
-            startTimer(); 
+            currentQuestions = questionsDB[subject];
+            if(currentQuestions.length === 0) return alert("ጥያቄ አልተጫነም!");
+            currentIndex = 0; score = 0; timeLeft = 3600;
+            showScreen('exam-page'); loadQuestion(); startTimer(); 
         }
 
         function startTimer() {
@@ -186,13 +244,8 @@
                 timeLeft--;
                 let mins = Math.floor(timeLeft / 60);
                 let secs = timeLeft % 60;
-                document.getElementById('timer').innerText = 
-                    (mins < 10 ? "0" : "") + mins + ":" + (secs < 10 ? "0" : "") + secs;
-                
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    finishExam(); // ሰዓቱ ሲያልቅ በራሱ ይዘጋል
-                }
+                document.getElementById('timer').innerText = (mins < 10 ? "0" : "") + mins + ":" + (secs < 10 ? "0" : "") + secs;
+                if (timeLeft <= 0) { clearInterval(timerInterval); finishExam(); }
             }, 1000);
         }
 
@@ -200,15 +253,12 @@
             let q = currentQuestions[currentIndex];
             document.getElementById('q-info-box').innerText = "Question " + (currentIndex + 1) + " of " + currentQuestions.length;
             document.getElementById('current-question-box').innerText = q.q;
-            
             document.getElementById('optA').innerText = "A) " + q.a;
             document.getElementById('optB').innerText = "B) " + q.b;
             document.getElementById('optC').innerText = "C) " + q.c;
             document.getElementById('optD').innerText = "D) " + q.d;
-
             resetOptions();
             selectedAnswer = null;
-
             if(currentIndex === currentQuestions.length - 1) {
                 document.getElementById('next-btn').classList.add('hidden');
                 document.getElementById('submit-btn').classList.remove('hidden');
@@ -218,37 +268,11 @@
             }
         }
 
-        function selectOption(choice) {
-            resetOptions();
-            selectedAnswer = choice;
-            document.getElementById('opt' + choice).classList.add('selected');
-        }
-
-        function resetOptions() {
-            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
-        }
-
-        function nextQuestion() {
-            if(!selectedAnswer) return alert("እባክዎ መልስ ይምረጡ!");
-            if(selectedAnswer === currentQuestions[currentIndex].correct) score++;
-            currentIndex++;
-            loadQuestion();
-        }
-
-        function finishExam() {
-            if(selectedAnswer && selectedAnswer === currentQuestions[currentIndex].correct) score++;
-            clearInterval(timerInterval);
-            showScreen('result-page');
-            document.getElementById('final-score-display').innerText = score + " / " + currentQuestions.length;
-        }
-
-        function goBack() {
-            if(currentIndex > 0) {
-                currentIndex--;
-                loadQuestion();
-            }
-        }
-
+        function selectOption(choice) { resetOptions(); selectedAnswer = choice; document.getElementById('opt' + choice).classList.add('selected'); }
+        function resetOptions() { document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected')); }
+        function nextQuestion() { if(!selectedAnswer) return alert("መልስ ይምረጡ!"); if(selectedAnswer === currentQuestions[currentIndex].correct) score++; currentIndex++; loadQuestion(); }
+        function finishExam() { if(selectedAnswer && selectedAnswer === currentQuestions[currentIndex].correct) score++; clearInterval(timerInterval); showScreen('result-page'); document.getElementById('final-score-display').innerText = score + " / " + currentQuestions.length; }
+        function goBack() { if(currentIndex > 0) { currentIndex--; loadQuestion(); } }
         function showScanPage() { alert("QR Scanning system በቅርቡ ይከፈታል!"); }
     </script>
 </body>
