@@ -32,28 +32,14 @@
         .smart-paste-box { border: 1px dashed #00d2ff; height: 80px; }
         #qr-reader { width: 100%; border-radius: 15px; overflow: hidden; }
         #qrcode-output { background: white; padding: 15px; display: inline-block; border-radius: 10px; margin: 10px; }
-        
-        /* ለጽሑፉ ልዩ ስታይል */
-        .welcome-text {
-            font-size: 1.4rem;
-            line-height: 1.6;
-            color: #00d2ff;
-            margin: 20px 0;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
 
     <div id="splash" class="container">
         <div style="font-size:70px">🎓</div>
-        <div class="welcome-text">
-            እንኳን ወደ መርጡለ ማሪያም<br>
-            2ኛ ደረጃ ትምህርት ቤት<br>
-            የተማሪዎች የፈተና መለማመጃ<br>
-            ሲስተም በደህና መጣችሁ!
-        </div>
-        <p style="color:#ffd700; font-weight: bold;">አዘጋጅ፦ በረከት ቀናው</p>
+        <h1 style="font-size: 1.3rem; line-height: 1.6; color: #00d2ff;">እንኳን ወደ መርጡለ ማሪያም 2ኛ ደረጃ ትምህርት ቤት የተማሪዎች የፈተና መለማመጃ ሲስተም በደህና መጣችሁ!</h1>
+        <p style="color:#ffd700; font-weight: bold; font-size: 1.2rem;">አዘጋጅ፦ በረከት ቀናው</p>
     </div>
 
     <div id="main-menu" class="container hidden">
@@ -139,8 +125,7 @@
         let isAdmin = false, activeSub = "", currentQs = [], qIdx = 0, score = 0, timer;
         let html5QrCode;
 
-        // Splash screen ለ 3 ሰከንድ እንዲቆይ
-        setTimeout(() => showScreen('main-menu'), 3000);
+        setTimeout(() => showScreen('main-menu'), 4000);
 
         function showScreen(id) {
             document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
@@ -154,7 +139,7 @@
                 try {
                     const result = await Tesseract.recognize(input.files[0], 'eng');
                     status.value = result.data.text;
-                    alert("ጽሑፉ ተነቧል!");
+                    alert("ጽሑፉ ተነቧል! አሁን 'ዳታውን ለይ' የሚለውን ይጫኑ።");
                 } catch (e) { alert("መነብ አልተቻለም!"); }
             }
         }
@@ -170,15 +155,13 @@
             showScreen('qr-scan-page');
             html5QrCode = new Html5Qrcode("qr-reader");
             html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
-                try {
-                    let data = JSON.parse(text);
-                    if(data.s && data.q) {
-                        db[data.s] = data.q;
-                        localStorage.setItem('mertuleDB', JSON.stringify(db));
-                        alert(data.s + " ጥያቄዎች ገብተዋል!");
-                        stopQRScanner();
-                    }
-                } catch(e) { alert("ትክክለኛ የጥያቄ QR አይደለም!"); }
+                let data = JSON.parse(text);
+                if(data.s && data.q) {
+                    db[data.s] = data.q;
+                    localStorage.setItem('mertuleDB', JSON.stringify(db));
+                    alert(data.s + " ጥያቄዎች ገብተዋል!");
+                    stopQRScanner();
+                }
             }).catch(() => alert("ካሜራ አልተገኘም"));
         }
 
@@ -217,27 +200,13 @@
         }
 
         function saveAdminQuestion() {
-            let qText = document.getElementById('admin-q-text').value;
-            let correct = document.getElementById('admin-correct').value;
-            if(!qText || !correct) return alert("እባክዎ ጥያቄውን እና ትክክለኛ መልሱን ያስገቡ");
-            
-            let q = {
-                q: qText, 
-                a: document.getElementById('admin-optA').value, 
-                b: document.getElementById('admin-optB').value, 
-                c: document.getElementById('admin-optC').value, 
-                d: document.getElementById('admin-optD').value, 
-                correct: correct
-            };
-            db[activeSub].push(q); 
-            localStorage.setItem('mertuleDB', JSON.stringify(db));
-            alert("ጥያቄው ተመዝግቧል!");
-            // ፎርሙን አጽዳ
-            document.getElementById('admin-q-text').value = "";
+            let q = {q:document.getElementById('admin-q-text').value, a:document.getElementById('admin-optA').value, b:document.getElementById('admin-optB').value, c:document.getElementById('admin-optC').value, d:document.getElementById('admin-optD').value, correct:document.getElementById('admin-correct').value};
+            db[activeSub].push(q); localStorage.setItem('mertuleDB', JSON.stringify(db));
+            alert("ተመዝግቧል!");
         }
 
         function startExam(s) {
-            currentQs = db[s]; if(!currentQs || !currentQs.length) return alert("ለዚህ ትምህርት ጥያቄ አልተጫነም!");
+            currentQs = db[s]; if(!currentQs.length) return alert("ጥያቄ የለም!");
             qIdx = 0; score = 0; showScreen('exam-page'); loadQ();
         }
 
@@ -260,7 +229,7 @@
 
         function nextQuestion() {
             let sel = document.querySelector('[data-ans]');
-            if(!sel) return alert("እባክዎ መልስ ይምረጡ");
+            if(!sel) return alert("መልስ ይምረጡ");
             if(sel.dataset.ans === currentQs[qIdx].correct) score++;
             qIdx++; loadQ();
         }
