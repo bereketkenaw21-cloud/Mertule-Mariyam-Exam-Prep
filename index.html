@@ -21,9 +21,9 @@
             max-height: 90vh; overflow-y: auto;
         }
         .hidden { display: none !important; }
-        h1 { font-size: 1.4rem; color: #00d2ff; }
-        .creator { font-weight: bold; color: #ffd700; font-size: 1rem; margin-top: 10px; }
-        .cap-icon { font-size: 60px; }
+        h1 { font-size: 1.4rem; color: #00d2ff; line-height: 1.5; }
+        .creator { font-weight: bold; color: #ffd700; font-size: 1.1rem; margin-top: 15px; }
+        .cap-icon { font-size: 70px; margin-bottom: 10px; }
         
         button {
             background: linear-gradient(to right, #00d2ff, #3a7bd5); color: white;
@@ -32,12 +32,11 @@
         }
         button:hover { transform: scale(1.02); box-shadow: 0 0 15px #00d2ff; }
         
-        /* ምርጫዎች (Options) ዲዛይን */
         .options-container { display: flex; flex-direction: column; align-items: center; width: 100%; }
         .option-btn {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 15px; padding: 12px; margin: 5px 0;
+            border-radius: 15px; padding: 12px; margin: 6px 0;
             width: 90%; text-align: left; font-size: 1rem; color: white;
             transition: 0.3s; cursor: pointer;
         }
@@ -45,11 +44,7 @@
             background: #00d2ff; color: #000; font-weight: bold; border-color: #fff;
         }
 
-        input, textarea {
-            width: 85%; padding: 12px; margin: 10px; border-radius: 10px; border: none;
-            background: rgba(255, 255, 255, 0.2); color: white;
-        }
-        #timer { font-size: 1.5rem; color: #ff4b2b; font-weight: bold; margin-bottom: 10px; }
+        #timer { font-size: 2rem; color: #ff4b2b; font-weight: bold; margin-bottom: 10px; text-shadow: 0 0 10px rgba(255,75,43,0.4); }
         .q-info { font-size: 0.9rem; color: #ffd700; margin-bottom: 5px; }
         .q-text { text-align: left; font-size: 1.1rem; margin-bottom: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 15px; min-height: 50px; }
     </style>
@@ -58,7 +53,7 @@
 
     <div id="splash" class="container">
         <div class="cap-icon">🎓</div>
-        <h1>መርጡለ ማሪያም 2ኛ ደረጃ ትምህርት ቤት የፈተና መለማመጃ</h1>
+        <h1>እንኳን ወደ መርጡለ ማሪያም 2ኛ ደረጃ ትምህርት ቤት የተማሪዎች የፈተና መለማመጃ ሲስተም በደህና መጣችሁ!</h1>
         <p class="creator">አዘጋጅ፦ በረከት ቀናው</p>
     </div>
 
@@ -81,10 +76,10 @@
         <div id="current-question-box" class="q-text"></div>
         
         <div id="options-area" class="options-container">
-            <div class="option-btn" id="optA" onclick="selectOption('A')">A) </div>
-            <div class="option-btn" id="optB" onclick="selectOption('B')">B) </div>
-            <div class="option-btn" id="optC" onclick="selectOption('C')">C) </div>
-            <div class="option-btn" id="optD" onclick="selectOption('D')">D) </div>
+            <div class="option-btn" id="optA" onclick="selectOption('A')"></div>
+            <div class="option-btn" id="optB" onclick="selectOption('B')"></div>
+            <div class="option-btn" id="optC" onclick="selectOption('C')"></div>
+            <div class="option-btn" id="optD" onclick="selectOption('D')"></div>
         </div>
 
         <div style="display: flex; justify-content: space-around; margin-top: 15px;">
@@ -96,15 +91,17 @@
 
     <div id="result-page" class="container hidden">
         <h1>ውጤትዎ</h1>
-        <h2 id="final-score-display"></h2>
+        <h2 id="final-score-display" style="font-size: 2.5rem; color: #ffd700;"></h2>
         <button onclick="location.reload()">እንደገና ጀምር</button>
     </div>
 
     <script>
         let currentQuestions = [], currentIndex = 0, selectedAnswer = null, score = 0;
+        let timeLeft = 3600; // 1 ሰአት በሰከንድ
+        let timerInterval;
 
-        // Splash screen timer
-        setTimeout(() => showScreen('main-menu'), 3000);
+        // መጀመሪያ Splash Screen ለ 4 ሰከንድ ይታያል
+        setTimeout(() => showScreen('main-menu'), 4000);
 
         function showScreen(id) {
             document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
@@ -112,7 +109,7 @@
         }
 
         function studentFlow() {
-            // ለሙከራ ያህል ጥያቄ እዚህ ጋር እንሙላ (በኋላ ከ ዳታቤዝህ/QR ጋር ታገናኘዋለህ)
+            // ጥያቄዎቹን እዚህ ጋር እናስገባለን
             currentQuestions = [
                 { q: "What is the value of 2x + 5 = 15?", a: "5", b: "10", c: "7.5", d: "20", correct: "A" },
                 { q: "Capital city of Ethiopia?", a: "Gonder", b: "Addis Ababa", c: "Hawassa", d: "Mekelle", correct: "B" }
@@ -121,6 +118,23 @@
             score = 0;
             showScreen('exam-page');
             loadQuestion();
+            startTimer(); // ሰዓቱን ያስጀምራል
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                let mins = Math.floor(timeLeft / 60);
+                let secs = timeLeft % 60;
+                document.getElementById('timer').innerText = 
+                    (mins < 10 ? "0" : "") + mins + ":" + (secs < 10 ? "0" : "") + secs;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    finishExam();
+                }
+            }, 1000);
         }
 
         function loadQuestion() {
@@ -128,17 +142,14 @@
             document.getElementById('q-info-box').innerText = "Question " + (currentIndex + 1) + " of " + currentQuestions.length;
             document.getElementById('current-question-box').innerText = q.q;
             
-            // ምርጫዎቹን መሙላት
             document.getElementById('optA').innerText = "A) " + q.a;
             document.getElementById('optB').innerText = "B) " + q.b;
             document.getElementById('optC').innerText = "C) " + q.c;
             document.getElementById('optD').innerText = "D) " + q.d;
 
-            // ቀለሙን ወደ ነበረበት መመለስ
             resetOptions();
             selectedAnswer = null;
 
-            // Next/Submit button switch
             if(currentIndex === currentQuestions.length - 1) {
                 document.getElementById('next-btn').classList.add('hidden');
                 document.getElementById('submit-btn').classList.remove('hidden');
@@ -161,15 +172,13 @@
         function nextQuestion() {
             if(!selectedAnswer) return alert("እባክዎ መልስ ይምረጡ!");
             if(selectedAnswer === currentQuestions[currentIndex].correct) score++;
-            
             currentIndex++;
             loadQuestion();
         }
 
         function finishExam() {
-            if(!selectedAnswer) return alert("እባክዎ መልስ ይምረጡ!");
-            if(selectedAnswer === currentQuestions[currentIndex].correct) score++;
-            
+            if(selectedAnswer && selectedAnswer === currentQuestions[currentIndex].correct) score++;
+            clearInterval(timerInterval);
             showScreen('result-page');
             document.getElementById('final-score-display').innerText = score + " / " + currentQuestions.length;
         }
@@ -180,6 +189,9 @@
                 loadQuestion();
             }
         }
+
+        function adminFlow() { alert("Admin section is under development."); }
+        function showScanPage() { alert("Scan section is under development."); }
     </script>
 </body>
 </html>
