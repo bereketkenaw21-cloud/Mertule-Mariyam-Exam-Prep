@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mertule Mariyam Exam Prep</title>
     <link rel="manifest" href="manifest.json">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         /* 2026 Modern Design (Glassmorphism) */
@@ -27,17 +29,20 @@
         button {
             background: linear-gradient(to right, #00d2ff, #3a7bd5); color: white;
             border: none; padding: 12px 25px; border-radius: 50px; font-size: 1.1rem;
-            cursor: pointer; margin: 10px; transition: 0.3s; width: 80%;
+            cursor: pointer; margin: 10px; transition: 0.3s; width: 85%;
         }
         button:hover { transform: scale(1.05); box-shadow: 0 0 20px #00d2ff; }
         input, textarea {
-            width: 80%; padding: 12px; margin: 10px; border-radius: 10px; border: none; outline: none;
+            width: 85%; padding: 12px; margin: 10px; border-radius: 10px; border: none; outline: none;
             background: rgba(255, 255, 255, 0.2); color: white;
         }
         #timer { font-size: 1.5rem; color: #ff4b2b; font-weight: bold; margin-bottom: 15px; }
-        .q-text { text-align: left; font-size: 1.1rem; margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; }
+        .q-text { text-align: left; font-size: 1.1rem; margin-bottom: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 15px; }
         .status-msg { color: #ffd700; font-size: 0.9rem; margin: 5px; }
         #install-box { background: #ffd700; color: #000; font-weight: bold; margin-bottom: 15px; display: none; }
+        #reader { width: 100%; border-radius: 15px; overflow: hidden; background: white; }
+        #qrcode { background: white; padding: 15px; display: inline-block; border-radius: 10px; margin-top: 10px; }
+        .review-item { text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 10px; }
     </style>
 </head>
 <body>
@@ -50,14 +55,15 @@
 
     <div id="main-menu" class="container hidden">
         <button id="install-box" onclick="installApp()">አፑን ስልክ ላይ ጫን (Install)</button>
-        <div style="text-align: right; margin-bottom: 10px;">
-            <select id="lang" style="padding: 5px; border-radius: 5px;">
-                <option>አማርኛ</option>
-                <option>English</option>
-            </select>
-        </div>
         <h1>ምርጫዎን ያሳውቁ</h1>
         <button onclick="showRoleSelection()">Start / ጀምር</button>
+        <button onclick="showScanPage()" style="background: #9b59b6;">ጥያቄ በ QR Scan ተቀበል</button>
+    </div>
+
+    <div id="scan-page" class="container hidden">
+        <h1>QR ኮዱን ስካን ያድርጉ</h1>
+        <div id="reader"></div>
+        <button onclick="stopScanner(); showScreen('main-menu')" style="background: grey;">ተመለስ</button>
     </div>
 
     <div id="role-page" class="container hidden">
@@ -84,11 +90,13 @@
     <div id="subject-page" class="container hidden">
         <h1 id="subject-title">ትምህርት ይምረጡ</h1>
         <div id="subject-list"></div>
+        
         <div id="admin-upload-area" class="hidden">
-            <textarea id="question-input" rows="5" placeholder="ጥያቄዎችን እዚህ ፔስት ያድርጉ..."></textarea>
+            <textarea id="question-input" rows="5" placeholder="ጥያቄ | መልስ | ማብራሪያ (እስከ 100 ጥያቄ)"></textarea>
             <div id="ocr-status" class="status-msg"></div>
             <button onclick="saveQuestions()" style="background: #28a745;">ጥያቄዎቹን ጫን</button>
-            
+            <button onclick="generateQR()" style="background: #9b59b6;">ለተማሪዎች አጋራ (QR)</button>
+            <div id="qrcode" class="hidden"></div>
             <input type="file" id="camera-file" accept="image/*" capture="environment" class="hidden" onchange="handleOCR(this)">
             <button onclick="document.getElementById('camera-file').click()" style="background: #e67e22;">📷 በካሜራ አንሳ</button>
         </div>
@@ -103,37 +111,40 @@
         <button id="submit-btn" onclick="finishExam()" class="hidden" style="background: #27ae60;">ጨርስ (Submit)</button>
     </div>
 
+    <div id="result-page" class="container hidden">
+        <h1>ውጤትዎ</h1>
+        <h2 id="final-score-display"></h2>
+        <div id="review-area" style="max-height: 300px; overflow-y: auto;"></div>
+        <button onclick="location.reload()">እንደገና ጀምር</button>
+    </div>
+
     <script>
-        // --- Offline & Install Support ---
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
+        // --- PWA & Offline Support ---
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
+            e.preventDefault(); deferredPrompt = e;
             document.getElementById('install-box').style.display = 'block';
         });
 
         function installApp() {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(() => {
-                    document.getElementById('install-box').style.display = 'none';
-                });
+                deferredPrompt.userChoice.then(() => document.getElementById('install-box').style.display = 'none');
             }
         }
 
-        // --- Original App Logic ---
+        // --- Core Logic ---
         let isAdmin = false;
         let selectedSubject = "";
         let currentQuestions = [];
         let currentIndex = 0;
         let timerSeconds = 3600;
         let score = 0;
+        let examResults = [];
 
-        const screens = ['splash', 'main-menu', 'role-page', 'admin-login', 'category-page', 'subject-page', 'exam-page'];
+        const screens = ['splash', 'main-menu', 'role-page', 'admin-login', 'category-page', 'subject-page', 'exam-page', 'scan-page', 'result-page'];
 
         function showScreen(id) {
             screens.forEach(s => document.getElementById(s).classList.add('hidden'));
@@ -148,8 +159,7 @@
 
         function checkAdminPass() {
             if(document.getElementById('admin-pass').value === "Mertule Mariyam@2026") {
-                isAdmin = true;
-                showScreen('category-page');
+                isAdmin = true; showScreen('category-page');
             } else { alert("የተሳሳተ ፓስወርድ ነው!"); }
         }
 
@@ -157,7 +167,9 @@
             showScreen('subject-page');
             const list = document.getElementById('subject-list');
             list.innerHTML = "";
-            const subs = type === 'Social' ? ['Geography', 'History', 'Economics'] : ['Biology', 'Physics', 'Chemistry'];
+            const subs = type === 'Natural' ? 
+                ['English', 'Maths_Nat', 'Physics', 'Chemistry', 'Biology', 'Civics'] : 
+                ['English', 'Maths_Soc', 'Geography', 'History', 'Economics'];
             
             subs.forEach(s => {
                 const btn = document.createElement('button');
@@ -173,59 +185,91 @@
                 document.getElementById('subject-list').classList.add('hidden');
                 document.getElementById('admin-upload-area').classList.remove('hidden');
                 document.getElementById('subject-title').innerText = s + " ጥያቄ መጫኛ";
-            } else {
-                startExam(s);
-            }
+                document.getElementById('question-input').value = localStorage.getItem('exam_' + selectedSubject) || "";
+            } else { startExam(s); }
         }
 
+        // --- QR Code Sharing ---
+        function generateQR() {
+            const data = localStorage.getItem('exam_' + selectedSubject);
+            if(!data) return alert("ጥያቄ የለም!");
+            const qrBox = document.getElementById('qrcode');
+            qrBox.innerHTML = ""; qrBox.classList.remove('hidden');
+            new QRCode(qrBox, { text: "SUB:"+selectedSubject+"#"+data, width: 200, height: 200 });
+        }
+
+        let html5QrCode;
+        function showScanPage() {
+            showScreen('scan-page');
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => {
+                const parts = decodedText.split('#');
+                const subName = parts[0].replace("SUB:", "");
+                localStorage.setItem('exam_' + subName, parts[1]);
+                alert(subName + " ጥያቄዎች ደርሰዋል!");
+                stopScanner(); showScreen('main-menu');
+            }).catch(()=>{});
+        }
+        function stopScanner() { if(html5QrCode) html5QrCode.stop(); }
+
+        // --- OCR ---
         function handleOCR(input) {
             const file = input.files[0];
             if (!file) return;
-            document.getElementById('ocr-status').innerText = "ፎቶው ወደ ጽሑፍ እየተቀየረ ነው... እባክዎ ይጠብቁ";
-            
-            Tesseract.recognize(file, 'eng', { logger: m => console.log(m) }).then(({ data: { text } }) => {
+            document.getElementById('ocr-status').innerText = "እየተቀየረ ነው...";
+            Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
                 document.getElementById('question-input').value = text;
-                document.getElementById('ocr-status').innerText = "በስኬት ተቀይሯል!";
-            }).catch(err => {
-                document.getElementById('ocr-status').innerText = "ስህተት ተፈጥሯል፣ እባክዎ እንደገና ይሞክሩ።";
+                document.getElementById('ocr-status').innerText = "ተጠናቋል!";
             });
         }
 
         function saveQuestions() {
-            const input = document.getElementById('question-input').value;
-            if(!input) return alert("እባክዎ ጥያቄ ያስገቡ!");
-            localStorage.setItem('exam_' + selectedSubject, input);
-            alert(selectedSubject + " ጥያቄዎች በስኬት ተጭነዋል!");
-            backToCategory();
+            localStorage.setItem('exam_' + selectedSubject, document.getElementById('question-input').value);
+            alert("በስኬት ተቀምጧል!");
         }
 
+        // --- Exam Engine ---
         function startExam(s) {
             const data = localStorage.getItem('exam_' + s);
-            if(!data) return alert("ለዚህ ትምህርት ጥያቄ ገና አልተጫነም!");
-            
-            currentQuestions = data.split('\n').filter(q => q.trim() !== "");
-            currentIndex = 0;
-            score = 0;
-            showScreen('exam-page');
-            updateQuestion();
-            startTimer();
+            if(!data) return alert("ጥያቄ አልተጫነም!");
+            currentQuestions = data.split('\n').filter(q => q.includes('|'));
+            currentIndex = 0; score = 0; examResults = [];
+            showScreen('exam-page'); updateQuestion(); startTimer();
         }
 
         function updateQuestion() {
-            document.getElementById('current-question-box').innerText = currentQuestions[currentIndex];
+            const parts = currentQuestions[currentIndex].split('|');
+            document.getElementById('current-question-box').innerText = (currentIndex+1) + ". " + parts[0];
             document.getElementById('student-answer').value = "";
-            if(currentIndex === currentQuestions.length - 1) {
-                document.getElementById('submit-btn').classList.remove('hidden');
-            }
+            if(currentIndex === currentQuestions.length - 1) document.getElementById('submit-btn').classList.remove('hidden');
         }
 
         function nextQuestion() {
-            if(!document.getElementById('student-answer').value) return alert("መልስ ሳይሰጡ ማለፍ አይቻልም!");
-            score++; 
-            if(currentIndex < currentQuestions.length - 1) {
-                currentIndex++;
-                updateQuestion();
-            }
+            const ans = document.getElementById('student-answer').value.trim().toUpperCase();
+            if(!ans) return alert("መልስ ይሙሉ።");
+            const parts = currentQuestions[currentIndex].split('|');
+            const correct = parts[1].trim().toUpperCase();
+            
+            if(ans === correct) score++;
+            examResults.push({q: parts[0], mine: ans, correct: correct, exp: parts[2] || "ማብራሪያ የለውም"});
+
+            if(currentIndex < currentQuestions.length - 1) { currentIndex++; updateQuestion(); }
+            else { finishExam(); }
+        }
+
+        function finishExam() {
+            showScreen('result-page');
+            document.getElementById('final-score-display').innerText = score + " / " + currentQuestions.length;
+            const area = document.getElementById('review-area');
+            area.innerHTML = "";
+            examResults.forEach(r => {
+                area.innerHTML += `<div class="review-item">
+                    <p><b>ጥያቄ:</b> ${r.q}</p>
+                    <p style="color:${r.mine==r.correct?'#2ecc71':'#e74c3c'}">መልስዎ: ${r.mine}</p>
+                    <p style="color:#2ecc71">ትክክል: ${r.correct}</p>
+                    <p style="color:#ffd700"><b>ማብራሪያ:</b> ${r.exp}</p>
+                </div>`;
+            });
         }
 
         function startTimer() {
@@ -234,16 +278,8 @@
                 let min = Math.floor(timerSeconds / 60);
                 let sec = timerSeconds % 60;
                 document.getElementById('timer').innerText = `${min}:${sec < 10 ? '0'+sec : sec}`;
-                if(timerSeconds <= 0) {
-                    clearInterval(t);
-                    finishExam();
-                }
+                if(timerSeconds <= 0) { clearInterval(t); finishExam(); }
             }, 1000);
-        }
-
-        function finishExam() {
-            alert("ፈተናውን ጨርሰዋል። ውጤትዎ: " + currentIndex + "/" + currentQuestions.length);
-            location.reload();
         }
 
         function backToMenu() { showScreen('main-menu'); }
