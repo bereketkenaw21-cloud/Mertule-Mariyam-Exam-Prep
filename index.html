@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mertule Mariyam Exam Prep</title>
+    
+    <meta name="theme-color" content="#302b63">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="MM Exam">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
@@ -32,9 +38,17 @@
         .smart-paste-box { border: 1px dashed #00d2ff; height: 80px; }
         #qr-reader { width: 100%; border-radius: 15px; overflow: hidden; }
         #qrcode-output { background: white; padding: 15px; display: inline-block; border-radius: 10px; margin: 10px; }
+        
+        /* Install Button Style */
+        #install-banner {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: #27ae60; z-index: 1000; width: 80%;
+        }
     </style>
 </head>
 <body>
+
+    <button id="install-banner" class="hidden">አፑን ስልክዎ ላይ ይጫኑ (Install App)</button>
 
     <div id="splash" class="container">
         <div style="font-size:70px">🎓</div>
@@ -123,6 +137,26 @@
     </div>
 
     <script>
+        // --- INSTALL LOGIC ---
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-banner').classList.remove('hidden');
+        });
+
+        document.getElementById('install-banner').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('install-banner').classList.add('hidden');
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        // --- ORIGINAL APP LOGIC ---
         let db = JSON.parse(localStorage.getItem('mertuleDB')) || {"English":[], "Maths":[], "Physics":[], "Chemistry":[], "Biology":[], "Geography":[], "History":[], "Economics":[]};
         let isAdmin = false, activeSub = "", currentQs = [], qIdx = 0, score = 0, timer;
         let html5QrCode;
