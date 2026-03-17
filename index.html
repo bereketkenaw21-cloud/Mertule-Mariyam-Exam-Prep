@@ -18,46 +18,50 @@
         }
         .hidden { display: none !important; }
         
-        /* የጥያቄ ካርድ */
         .q-card {
             background: rgba(0, 0, 0, 0.3); border-radius: 20px;
             padding: 20px; font-size: 1.3rem; text-align: left;
-            margin-bottom: 25px; border-bottom: 3px solid #00d2ff;
+            margin-bottom: 25px; border-left: 5px solid #00d2ff;
         }
 
-        /* ክብ ምርጫዎች (አንተ የፈለግከው) */
+        /* የመምረጫ ሳጥኖች - መጻፊያ የለውም */
         .options-list { display: flex; flex-direction: column; gap: 15px; width: 100%; }
         .option-item {
             display: flex; align-items: center; cursor: pointer;
-            transition: 0.3s; padding: 10px; border-radius: 15px;
+            padding: 15px; border-radius: 15px; background: rgba(255, 255, 255, 0.05);
+            transition: 0.3s; border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .option-item:hover { background: rgba(255, 255, 255, 0.05); }
+        
+        /* ሲመረጥ የሚሆን ቀለም */
+        .option-item.selected {
+            background: rgba(0, 210, 255, 0.2);
+            border: 1px solid #00d2ff;
+        }
 
         .circle-label {
-            width: 45px; height: 45px; border-radius: 50%;
+            width: 40px; height: 40px; border-radius: 50%;
             border: 2px solid #00d2ff; display: flex;
             justify-content: center; align-items: center;
-            font-weight: bold; font-size: 1.2rem; margin-right: 20px;
-            flex-shrink: 0; transition: 0.3s;
+            font-weight: bold; margin-right: 15px; flex-shrink: 0;
         }
         
         .option-item.selected .circle-label {
-            background: #00d2ff; color: #000; box-shadow: 0 0 15px #00d2ff;
+            background: #00d2ff; color: #000;
         }
 
-        .option-text { font-size: 1.2rem; text-align: left; }
+        .option-text { font-size: 1.1rem; text-align: left; }
 
         button {
             background: linear-gradient(to right, #00d2ff, #3a7bd5); color: white;
-            border: none; padding: 15px; border-radius: 50px; font-size: 1.1rem;
-            cursor: pointer; width: 80%; margin-top: 25px;
+            border: none; padding: 14px; border-radius: 50px; font-size: 1.1rem;
+            cursor: pointer; width: 80%; margin-top: 20px;
         }
         .nav-btns { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; }
         .nav-btns button { width: 45%; margin-top: 0; }
-
+        
         textarea {
             width: 90%; padding: 15px; border-radius: 15px; border: none;
-            background: rgba(255, 255, 255, 0.2); color: white; font-size: 1rem;
+            background: rgba(255, 255, 255, 0.2); color: white; margin-bottom: 10px;
         }
     </style>
 </head>
@@ -65,26 +69,27 @@
 
     <div id="splash" class="container">
         <h1 style="color: #00d2ff;">🎓 መርጡለ ማሪያም</h1>
-        <p>የተማሪዎች ፈተና ሲስተም</p>
+        <p>የተማሪዎች ፈተና መለማመጃ</p>
         <button onclick="showScreen('main-menu')">ጀምር</button>
     </div>
 
     <div id="main-menu" class="container hidden">
-        <button onclick="isAdmin=false; showSubjects()">ተማሪ (Student)</button>
+        <h1>ዋና ማውጫ</h1>
+        <button onclick="showSubjects()">ተማሪ (Student)</button>
         <button onclick="showAdminLogin()" style="background: #9b59b6;">አድሚን (Admin)</button>
     </div>
 
     <div id="admin-area" class="container hidden">
         <h3>ጥያቄዎችን ያስገቡ</h3>
-        <p style="font-size: 0.8rem; color: #ffd700;">ጥያቄ | ምርጫ1 | ምርጫ2 | ምርጫ3 | ምርጫ4 | ትክክል መልስ</p>
-        <textarea id="q-input" rows="8" placeholder="ለምሳሌ፡ 2x+5=15? | 5 | 10 | 7.5 | 20 | 5"></textarea>
+        <p style="font-size: 0.7rem; color: #ffd700;">ጥያቄ | A | B | C | D | መልስ</p>
+        <textarea id="q-input" rows="8" placeholder="ለምሳሌ፡ 2+2? | 3 | 4 | 5 | 6 | 4"></textarea>
         <button onclick="saveQuestions()" style="background: #27ae60;">አስቀምጥ</button>
-        <button onclick="showScreen('main-menu')" style="background: #e67e22;">ተመለስ</button>
+        <button onclick="showScreen('main-menu')" style="background: grey;">ተመለስ</button>
     </div>
 
     <div id="subject-page" class="container hidden">
         <h2>ትምህርት ይምረጡ</h2>
-        <button onclick="startExam('Maths')">Maths</button>
+        <button onclick="startExam('Maths')">Mathematics</button>
         <button onclick="startExam('Physics')">Physics</button>
         <button onclick="showScreen('main-menu')" style="background: grey;">ተመለስ</button>
     </div>
@@ -92,6 +97,7 @@
     <div id="exam-page" class="container hidden">
         <div id="q-text" class="q-card"></div>
         <div id="options-box" class="options-list"></div>
+        
         <div class="nav-btns">
             <button onclick="goBack()" style="background: #e67e22;">Back</button>
             <button onclick="goNext()">Next</button>
@@ -128,7 +134,7 @@
             const data = localStorage.getItem('saved_exams');
             if(!data) return alert("ጥያቄ አልተጫነም!");
             currentQs = data.split('\n').filter(l => l.includes('|'));
-            currentIndex = 0; studentAns = new Array(currentQs.length).fill("");
+            currentIndex = 0; studentAns = new Array(currentQs.length).fill(null);
             showScreen('exam-page'); updateQ();
         }
 
@@ -140,28 +146,31 @@
             box.innerHTML = "";
             const labels = ['A', 'B', 'C', 'D'];
 
-            // አራቱን ምርጫዎች በክብ ሳጥን ያወጣል
             for(let i=1; i<=4; i++) {
-                const choiceText = parts[i] ? parts[i].trim() : "---";
+                const choiceValue = parts[i] ? parts[i].trim() : "";
+                if(!choiceValue) continue;
+
                 const item = document.createElement('div');
                 item.className = 'option-item';
-                if(studentAns[currentIndex] === choiceText) item.classList.add('selected');
+                // ተማሪው ቀድሞ የመረጠው ከሆነ ምልክት ያደርጋል
+                if(studentAns[currentIndex] === choiceValue) item.classList.add('selected');
 
                 item.innerHTML = `
                     <div class="circle-label">${labels[i-1]}</div>
-                    <div class="option-text">${choiceText}</div>
+                    <div class="option-text">${choiceValue}</div>
                 `;
                 
+                // እዚህ ጋር ነው ክሊክ ሲያደርግ ብቻ የሚመርጠው
                 item.onclick = () => {
-                    studentAns[currentIndex] = choiceText;
-                    updateQ();
+                    studentAns[currentIndex] = choiceValue;
+                    updateQ(); // ቀለሙን እንዲቀይር ድጋሚ ያድሳል
                 };
                 box.appendChild(item);
             }
         }
 
         function goNext() {
-            if(!studentAns[currentIndex]) return alert("እባክዎ መልስ ይምረጡ!");
+            if(studentAns[currentIndex] === null) return alert("እባክዎ አንድ ምርጫ ይንኩ!");
             if(currentIndex < currentQs.length - 1) { currentIndex++; updateQ(); }
             else finish();
         }
