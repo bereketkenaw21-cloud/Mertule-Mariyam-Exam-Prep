@@ -32,22 +32,18 @@
             cursor: pointer; margin: 10px; transition: 0.3s; width: 85%;
         }
         button:hover { transform: scale(1.05); box-shadow: 0 0 20px #00d2ff; }
-        
-        /* ሰፊ የምርጫ ሳጥኖች (Choice Boxes) */
-        .options-list { display: flex; flex-direction: column; gap: 12px; width: 100%; margin: 15px 0; }
-        .option-box {
-            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2);
+
+        /* ሰፊ የጥያቄና ምርጫ ሳጥኖች */
+        .q-text { text-align: left; font-size: 1.2rem; margin-bottom: 20px; padding: 20px; background: rgba(0,0,0,0.4); border-radius: 20px; border-left: 5px solid #00d2ff; line-height: 1.4; }
+        .options-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        .option-card {
+            background: rgba(255, 255, 255, 0.08); border: 1.5px solid rgba(255, 255, 255, 0.1);
             padding: 16px; border-radius: 15px; text-align: left; font-size: 1.1rem;
             cursor: pointer; transition: 0.2s; display: flex; align-items: center;
         }
-        .option-box:active, .option-box.selected {
-            background: #00d2ff; color: #000; font-weight: bold; border-color: white;
-        }
-        .option-label {
-            background: rgba(0, 0, 0, 0.3); padding: 4px 10px;
-            border-radius: 8px; margin-right: 12px; font-weight: bold; color: #ffd700;
-        }
-        .option-box.selected .option-label { color: #000; }
+        .option-card.selected { background: #00d2ff; color: #000; font-weight: bold; border-color: white; }
+        .opt-letter { background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 8px; margin-right: 12px; font-weight: bold; color: #ffd700; }
+        .option-card.selected .opt-letter { color: #000; }
 
         input, textarea {
             width: 85%; padding: 12px; margin: 10px; border-radius: 10px; border: none; outline: none;
@@ -55,7 +51,6 @@
         }
         #timer { font-size: 1.5rem; color: #ff4b2b; font-weight: bold; margin-bottom: 15px; }
         .q-info { font-size: 0.9rem; color: #ffd700; margin-bottom: 5px; }
-        .q-text { text-align: left; font-size: 1.2rem; margin-bottom: 15px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 20px; border-left: 5px solid #00d2ff; }
         .status-msg { color: #ffd700; font-size: 0.9rem; margin: 5px; }
         #install-box { background: #ffd700; color: #000; font-weight: bold; margin-bottom: 15px; display: none; }
         #reader { width: 100%; border-radius: 15px; overflow: hidden; background: white; }
@@ -127,18 +122,18 @@
         <div id="q-info-box" class="q-info"></div>
         <div id="current-question-box" class="q-text"></div>
         
-        <div class="options-list" id="options-container"></div>
+        <div class="options-container" id="options-box"></div>
 
         <div style="display: flex; justify-content: space-around;">
-            <button id="prev-btn" onclick="goBack()" style="width: 45%; background: #e67e22;">ወደ ኋላ</button>
-            <button onclick="nextQuestion()" style="width: 45%;">ቀጣይ</button>
+            <button id="prev-btn" onclick="goBack()" style="width: 45%; background: #e67e22;">Back</button>
+            <button onclick="nextQuestion()" style="width: 45%;">Next</button>
         </div>
         <button id="submit-btn" onclick="finishExam()" class="hidden" style="background: #27ae60; margin-top: 15px;">ጨርስ (Submit)</button>
     </div>
 
     <div id="result-page" class="container hidden">
         <h1>ውጤትዎ</h1>
-        <h2 id="final-score-display" style="font-size: 2.5rem; color:#00d2ff"></h2>
+        <h2 id="final-score-display"></h2>
         <div id="review-area" style="max-height: 300px; overflow-y: auto;"></div>
         <button onclick="location.reload()">እንደገና ጀምር</button>
     </div>
@@ -178,7 +173,7 @@
             if(isAdmin) {
                 document.getElementById('subject-list').classList.add('hidden');
                 document.getElementById('admin-upload-area').classList.remove('hidden');
-                document.getElementById('subject-title').innerText = s + " አድሚን";
+                document.getElementById('subject-title').innerText = s + " ጥያቄ መጫኛ";
                 document.getElementById('question-input').value = localStorage.getItem('exam_' + selectedSubject) || "";
             } else { startExam(s); }
         }
@@ -190,45 +185,42 @@
 
         function startExam(s) {
             const data = localStorage.getItem('exam_' + s);
-            if(!data) return alert("ጥያቄ አልተጫነም!");
+            if(!data) return alert("ጥያቄ የለም!");
             currentQuestions = data.split('\n').filter(q => q.includes('|'));
-            currentIndex = 0; maxReachedIndex = 0; studentAnswers = new Array(currentQuestions.length).fill("");
+            currentIndex = 0; studentAnswers = new Array(currentQuestions.length).fill("");
             showScreen('exam-page'); updateQuestion(); startTimer();
         }
 
         function updateQuestion() {
             document.getElementById('q-info-box').innerText = "ጥያቄ " + (currentIndex + 1) + " ከ " + currentQuestions.length;
             const parts = currentQuestions[currentIndex].split('|');
-            const qAndOpts = parts[0].split('#'); // ጥያቄውን እና ምርጫውን በ # ይከፍላል
+            const qAndOpts = parts[0].split('#'); 
             
             document.getElementById('current-question-box').innerText = qAndOpts[0].trim();
-            
-            const container = document.getElementById('options-container');
-            container.innerHTML = "";
-            const labels = ['A', 'B', 'C', 'D'];
+            const box = document.getElementById('options-box');
+            box.innerHTML = "";
 
+            const labels = ['A', 'B', 'C', 'D'];
             for(let i=1; i<=4; i++) {
-                const box = document.createElement('div');
-                box.className = 'option-box';
-                if(studentAnswers[currentIndex] === labels[i-1]) box.classList.add('selected');
-                
-                box.innerHTML = `<span class="option-label">${labels[i-1]}</span> <span>${qAndOpts[i] ? qAndOpts[i].trim() : "---"}</span>`;
-                box.onclick = () => { studentAnswers[currentIndex] = labels[i-1]; updateQuestion(); };
-                container.appendChild(box);
+                const card = document.createElement('div');
+                card.className = 'option-card';
+                if(studentAnswers[currentIndex] === labels[i-1]) card.classList.add('selected');
+                card.innerHTML = `<span class="opt-letter">${labels[i-1]}</span> <span>${qAndOpts[i] ? qAndOpts[i].trim() : "---"}</span>`;
+                card.onclick = () => { studentAnswers[currentIndex] = labels[i-1]; updateQuestion(); };
+                box.appendChild(card);
             }
             
-            document.getElementById('prev-btn').style.visibility = (currentIndex > 0 && currentIndex > maxReachedIndex - 3) ? "visible" : "hidden";
+            document.getElementById('prev-btn').style.visibility = (currentIndex > 0) ? "visible" : "hidden";
             if(currentIndex === currentQuestions.length - 1) document.getElementById('submit-btn').classList.remove('hidden');
         }
 
         function nextQuestion() {
             if(!studentAnswers[currentIndex]) return alert("እባክዎ መጀመሪያ መልስ ይምረጡ!");
-            if(currentIndex === maxReachedIndex) maxReachedIndex++;
             if(currentIndex < currentQuestions.length - 1) { currentIndex++; updateQuestion(); }
             else { finishExam(); }
         }
 
-        function goBack() { if(currentIndex > 0 && currentIndex > maxReachedIndex - 3) { currentIndex--; updateQuestion(); } }
+        function goBack() { if(currentIndex > 0) { currentIndex--; updateQuestion(); } }
 
         function finishExam() {
             showScreen('result-page');
@@ -238,9 +230,8 @@
                 const p = q.split('|'), correct = p[1].trim().toUpperCase(), mine = studentAnswers[i];
                 if(mine === correct) score++;
                 area.innerHTML += `<div class="review-item"><p><b>Q${i+1}:</b> ${p[0].split('#')[0]}</p>
-                    <p style="color:${mine==correct?'#2ecc71':'#e74c3c'}">መልስዎ: ${mine}</p>
-                    <p style="color:#2ecc71">ትክክል: ${correct}</p>
-                    <p style="color:#ffd700"><b>ማብራሪያ:</b> ${p[2] || "የለም"}</p></div>`;
+                    <p style="color:${mine==correct?'#2ecc71':'#e74c3c'}">የናንተ መልስ: ${mine}</p>
+                    <p style="color:#2ecc71">ትክክል: ${correct}</p></div>`;
             });
             document.getElementById('final-score-display').innerText = score + " / " + currentQuestions.length;
         }
