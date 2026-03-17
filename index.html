@@ -49,7 +49,6 @@
         .q-text { text-align: left; font-size: 1.1rem; margin-bottom: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 15px; min-height: 50px; }
         .back-btn { background: #636e72 !important; margin-top: 10px; }
 
-        /* Admin Input Styling */
         input, select, textarea {
             width: 90%; padding: 10px; margin: 5px 0; border-radius: 10px; border: none; background: rgba(255,255,255,0.2); color: white;
         }
@@ -93,11 +92,10 @@
 
     <div id="admin-upload-page" class="container hidden">
         <h1 id="admin-sub-title">ጥያቄ መጫኛ</h1>
-        
         <p style="font-size: 0.8rem; color: #00d2ff;">ከ PDF ኮፒ ያደረጉትን እዚህ ይለጥፉ</p>
         <textarea id="smart-paste-input" class="smart-paste-box" placeholder="ምሳሌ፦ 1. What is... A) Opt1 B) Opt2..."></textarea>
         <button onclick="autoExtractData()" style="background: #e67e22; width: 60%; font-size: 0.8rem;">Extract Data (አደራጅ)</button>
-        <hr style="width: 90%; border: 0.5px solid rgba(255,255,255,0.1); margin: 15px 0;">
+        <hr style="width: 90%; border: 0.5px solid rgba(255,255,255,0.1); margin: 10px 0;">
 
         <textarea id="admin-q-text" placeholder="ጥያቄው..."></textarea>
         <input type="text" id="admin-optA" placeholder="ምርጫ A">
@@ -112,21 +110,19 @@
             <option value="D">D</option>
         </select>
         <button onclick="saveAdminQuestion()" style="background: #27ae60;">Save Question</button>
-        <button class="back-btn" onclick="showScreen('subject-page')">ጨርስ / ተመለስ</button>
+        <button class="back-btn" onclick="showScreen('subject-page')">ወደ ኋላ</button>
     </div>
 
     <div id="exam-page" class="container hidden">
         <div id="timer">60:00</div>
         <div id="q-info-box" class="q-info"></div>
         <div id="current-question-box" class="q-text"></div>
-        
         <div id="options-area" class="options-container">
             <div class="option-btn" id="optA" onclick="selectOption('A')"></div>
             <div class="option-btn" id="optB" onclick="selectOption('B')"></div>
             <div class="option-btn" id="optC" onclick="selectOption('C')"></div>
             <div class="option-btn" id="optD" onclick="selectOption('D')"></div>
         </div>
-
         <div style="display: flex; justify-content: space-around; margin-top: 15px;">
             <button id="prev-btn" onclick="goBack()" style="width: 45%; background: #e67e22;">Back</button>
             <button id="next-btn" onclick="nextQuestion()" style="width: 45%;">Next</button>
@@ -145,12 +141,8 @@
             "English": [], "Maths": [], "Physics": [], "Chemistry": [], "Biology": [],
             "Geography": [], "History": [], "Economics": []
         };
-
         let currentQuestions = [], currentIndex = 0, selectedAnswer = null, score = 0;
-        let timeLeft = 3600; 
-        let timerInterval;
-        let isAdminMode = false;
-        let activeAdminSubject = "";
+        let timeLeft = 3600, timerInterval, isAdminMode = false, activeAdminSubject = "";
 
         setTimeout(() => showScreen('main-menu'), 4000);
 
@@ -178,23 +170,22 @@
             subjects.forEach(sub => {
                 let btn = document.createElement('button');
                 btn.innerText = sub;
-                btn.onclick = () => { if(isAdminMode) openAdminPanel(sub); else startExam(sub); };
+                btn.onclick = () => {
+                    if(isAdminMode) {
+                        activeAdminSubject = sub;
+                        document.getElementById('admin-sub-title').innerText = sub + " ጥያቄ መጫኛ";
+                        showScreen('admin-upload-page');
+                    } else {
+                        startExam(sub);
+                    }
+                };
                 list.appendChild(btn);
             });
         }
 
-        function openAdminPanel(sub) {
-            activeAdminSubject = sub;
-            document.getElementById('admin-sub-title').innerText = sub + " ጥያቄ መጫኛ";
-            showScreen('admin-upload-page');
-        }
-
-        // --- SMART EXTRACTION LOGIC ---
         function autoExtractData() {
             const raw = document.getElementById('smart-paste-input').value;
             if(!raw) return alert("መጀመሪያ ጽሑፉን ይለጥፉ!");
-
-            // Regex to find choices A, B, C, D
             const parts = raw.split(/\s[A-D][\)\.\s]/i);
             if(parts.length >= 5) {
                 document.getElementById('admin-q-text').value = parts[0].trim().replace(/^\d+[\.\)]\s*/, '');
@@ -204,7 +195,7 @@
                 document.getElementById('admin-optD').value = parts[4].trim();
                 alert("ዳታው በየሳጥኑ ተከፋፍሏል!");
             } else {
-                alert("ጽሑፉን መለየት አልቻልኩም፤ እባክዎ ምርጫዎቹ በ A) B) C) D) መለየታቸውን ያረጋግጡ።");
+                alert("ምርጫዎቹ በ A) B) C) D) መለየታቸውን ያረጋግጡ።");
             }
         }
 
@@ -217,11 +208,9 @@
             let correct = document.getElementById('admin-correct').value;
 
             if(!q || !a || !b || !c || !d || !correct) return alert("ሁሉንም ይሙሉ!");
-
             questionsDB[activeAdminSubject].push({ q, a, b, c, d, correct });
-            alert("ጥያቄው ተቀምጧል!");
+            alert("ጥያቄው በ " + activeAdminSubject + " ስር ተቀምጧል!");
             
-            // Reset fields
             document.getElementById('smart-paste-input').value = "";
             document.getElementById('admin-q-text').value = "";
             document.getElementById('admin-optA').value = "";
