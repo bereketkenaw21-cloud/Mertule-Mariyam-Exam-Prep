@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mertule Mariyam Exam Prep</title>
+    <style>
+        /* 2026 Modern Design (Glassmorphism) */
+        body {
+            margin: 0; font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
+            color: white; height: 100vh; display: flex; justify-content: center; align-items: center; text-align: center;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px);
+            border-radius: 30px; padding: 40px; border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); width: 85%; max-width: 500px;
+        }
+        .hidden { display: none !important; }
+        h1 { font-size: 1.8rem; color: #00d2ff; }
+        .creator { font-weight: bold; color: #ffd700; font-size: 1.2rem; margin-top: 20px; }
+        .cap-icon { font-size: 80px; margin-bottom: 10px; }
+        
+        button {
+            background: linear-gradient(to right, #00d2ff, #3a7bd5); color: white;
+            border: none; padding: 15px 30px; border-radius: 50px; font-size: 1.1rem;
+            cursor: pointer; margin: 10px; transition: 0.3s; width: 80%;
+        }
+        button:hover { transform: scale(1.05); box-shadow: 0 0 20px #00d2ff; }
+        input {
+            width: 80%; padding: 12px; margin: 10px; border-radius: 10px; border: none; outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="splash" class="container">
+        <div class="cap-icon">🎓</div>
+        <h1>እንኳን ወደ መርጡለ ማሪያም 2ኛ ደረጃ ትምህርት ቤት የተማሪዎች የፈተና መለማመጃ ሲስተም በደህና መጣችሁ!</h1>
+        <p class="creator">አዘጋጅ፦ በረከት ቀናው</p>
+    </div>
+
+    <div id="main-menu" class="container hidden">
+        <div style="text-align: right; margin-bottom: 10px;">
+            <select style="padding: 5px; border-radius: 5px;">
+                <option>አማርኛ</option>
+                <option>English</option>
+            </select>
+        </div>
+        <h1>ምርጫዎን ያሳውቁ</h1>
+        <button onclick="showRoleSelection()">Start / ጀምር</button>
+    </div>
+
+    <div id="role-page" class="container hidden">
+        <h1>ማን ነዎት?</h1>
+        <button onclick="studentFlow()">ተማሪ (Student)</button>
+        <button onclick="adminFlow()">አድሚን (Admin)</button>
+        <br><button style="background: grey; width: 40%;" onclick="backToMenu()">ወደ ኋላ</button>
+    </div>
+
+    <div id="admin-login" class="container hidden">
+        <h1>Admin Login</h1>
+        <input type="password" id="admin-pass" placeholder="Password ያስገቡ...">
+        <button onclick="checkAdminPass()">ግባ</button>
+        <button style="background: grey; width: 40%;" onclick="backToRole()">ወደ ኋላ</button>
+    </div>
+
+    <div id="category-page" class="container hidden">
+        <h1 id="category-title">ዘርፍ ይምረጡ</h1>
+        <button onclick="showSubjects('Social')">Social Science</button>
+        <button onclick="showSubjects('Natural')">Natural Science</button>
+        <br><button style="background: grey; width: 40%;" onclick="backToRole()">ወደ ኋላ</button>
+    </div>
+
+    <div id="subject-page" class="container hidden">
+        <h1 id="subject-title">ትምህርት ይምረጡ</h1>
+        <div id="subject-list"></div>
+        <button style="background: grey; width: 40%;" onclick="backToCategory()">ወደ ኋላ</button>
+    </div>
+
+    <script>
+        // Logic for screens
+        const splash = document.getElementById('splash');
+        const mainMenu = document.getElementById('main-menu');
+        const rolePage = document.getElementById('role-page');
+        const adminLogin = document.getElementById('admin-login');
+        const categoryPage = document.getElementById('category-page');
+        const subjectPage = document.getElementById('subject-page');
+
+        // 1. Splash Screen Timer (5 Seconds)
+        setTimeout(() => {
+            splash.classList.add('hidden');
+            mainMenu.classList.remove('hidden');
+        }, 5000);
+
+        function showRoleSelection() {
+            mainMenu.classList.add('hidden');
+            rolePage.classList.remove('hidden');
+        }
+
+        function studentFlow() {
+            rolePage.classList.add('hidden');
+            categoryPage.classList.remove('hidden');
+            document.getElementById('category-title').innerText = "የተማሪ ገጽ - ዘርፍ ይምረጡ";
+        }
+
+        function adminFlow() {
+            rolePage.classList.add('hidden');
+            adminLogin.classList.remove('hidden');
+        }
+
+        function checkAdminPass() {
+            const pass = document.getElementById('admin-pass').value;
+            if(pass === "Mertule Mariyam@2026") {
+                adminLogin.classList.add('hidden');
+                categoryPage.classList.remove('hidden');
+                document.getElementById('category-title').innerText = "የአድሚን ገጽ - ዘርፍ ይምረጡ";
+            } else {
+                alert("የተሳሳተ ፓስወርድ ነው!");
+            }
+        }
+
+        function showSubjects(type) {
+            categoryPage.classList.add('hidden');
+            subjectPage.classList.remove('hidden');
+            const list = document.getElementById('subject-list');
+            list.innerHTML = "";
+            
+            const subs = type === 'Social' ? ['Geography', 'History', 'Economics'] : ['Biology', 'Physics', 'Chemistry'];
+            
+            subs.forEach(s => {
+                const btn = document.createElement('button');
+                btn.innerText = s;
+                btn.onclick = () => alert(s + " በቅርቡ ይጫናል!");
+                list.appendChild(btn);
+            });
+        }
+
+        // Navigation Back functions
+        function backToMenu() { rolePage.classList.add('hidden'); mainMenu.classList.remove('hidden'); }
+        function backToRole() { adminLogin.classList.add('hidden'); categoryPage.classList.add('hidden'); rolePage.classList.remove('hidden'); }
+        function backToCategory() { subjectPage.classList.add('hidden'); categoryPage.classList.remove('hidden'); }
+    </script>
+</body>
+</html>
