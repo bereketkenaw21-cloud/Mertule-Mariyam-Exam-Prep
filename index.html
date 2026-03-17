@@ -47,6 +47,7 @@
         #timer { font-size: 2rem; color: #ff4b2b; font-weight: bold; margin-bottom: 10px; text-shadow: 0 0 10px rgba(255,75,43,0.4); }
         .q-info { font-size: 0.9rem; color: #ffd700; margin-bottom: 5px; }
         .q-text { text-align: left; font-size: 1.1rem; margin-bottom: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 15px; min-height: 50px; }
+        .back-btn { background: #636e72 !important; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -66,8 +67,21 @@
     <div id="role-page" class="container hidden">
         <h1>ማን ነዎት?</h1>
         <button onclick="studentFlow()">ተማሪ (Student)</button>
-        <button onclick="adminFlow()">አድሚን (Admin)</button>
-        <button style="background: grey;" onclick="showScreen('main-menu')">ወደ ኋላ</button>
+        <button onclick="adminLoginFlow()">አድሚን (Admin)</button>
+        <button class="back-btn" onclick="showScreen('main-menu')">ወደ ኋላ</button>
+    </div>
+
+    <div id="stream-page" class="container hidden">
+        <h1 id="stream-header">ዘርፍ ይምረጡ</h1>
+        <button onclick="selectStream('Natural')">Natural Science</button>
+        <button onclick="selectStream('Social')">Social Science</button>
+        <button class="back-btn" onclick="showScreen('role-page')">ወደ ኋላ</button>
+    </div>
+
+    <div id="subject-page" class="container hidden">
+        <h1 id="subject-header">ትምህርት ይምረጡ</h1>
+        <div id="subject-list"></div>
+        <button class="back-btn" onclick="showScreen('stream-page')">ወደ ኋላ</button>
     </div>
 
     <div id="exam-page" class="container hidden">
@@ -97,10 +111,11 @@
 
     <script>
         let currentQuestions = [], currentIndex = 0, selectedAnswer = null, score = 0;
-        let timeLeft = 3600; // 1 ሰአት በሰከንድ
+        let timeLeft = 3600; 
         let timerInterval;
+        let isAdminMode = false;
 
-        // መጀመሪያ Splash Screen ለ 4 ሰከንድ ይታያል
+        // Splash screen 4 seconds
         setTimeout(() => showScreen('main-menu'), 4000);
 
         function showScreen(id) {
@@ -109,16 +124,59 @@
         }
 
         function studentFlow() {
-            // ጥያቄዎቹን እዚህ ጋር እናስገባለን
+            isAdminMode = false;
+            showScreen('stream-page');
+        }
+
+        function adminLoginFlow() {
+            let pass = prompt("Admin Password ያስገቡ:");
+            if(pass === "Mertule Mariyam@2026") {
+                isAdminMode = true;
+                showScreen('stream-page');
+            } else {
+                alert("የተሳሳተ ፓስወርድ ነው!");
+            }
+        }
+
+        function selectStream(stream) {
+            showScreen('subject-page');
+            const list = document.getElementById('subject-list');
+            list.innerHTML = "";
+            
+            // Common Subjects
+            let subjects = ["English", "Maths"];
+            if(stream === "Natural") {
+                subjects.push("Physics", "Chemistry", "Biology");
+            } else {
+                subjects.push("Geography", "History", "Economics");
+            }
+
+            subjects.forEach(sub => {
+                let btn = document.createElement('button');
+                btn.innerText = sub;
+                btn.onclick = () => {
+                    if(isAdminMode) {
+                        alert(sub + " ጥያቄ መጫኛ ክፍል (በቅርቡ ይጠናቀቃል)");
+                    } else {
+                        startExam(sub);
+                    }
+                };
+                list.appendChild(btn);
+            });
+        }
+
+        function startExam(subject) {
+            // Sample Data - እዚህ ጋር በ QR የመጣውን ዳታ ማገናኘት ትችላለህ
             currentQuestions = [
-                { q: "What is the value of 2x + 5 = 15?", a: "5", b: "10", c: "7.5", d: "20", correct: "A" },
-                { q: "Capital city of Ethiopia?", a: "Gonder", b: "Addis Ababa", c: "Hawassa", d: "Mekelle", correct: "B" }
+                { q: subject + " - Question 1: What is the answer?", a: "Option 1", b: "Option 2", c: "Option 3", d: "Option 4", correct: "A" },
+                { q: subject + " - Question 2: Solve this problem.", a: "Ans 1", b: "Ans 2", c: "Ans 3", d: "Ans 4", correct: "B" }
             ];
             currentIndex = 0;
             score = 0;
+            timeLeft = 3600;
             showScreen('exam-page');
             loadQuestion();
-            startTimer(); // ሰዓቱን ያስጀምራል
+            startTimer();
         }
 
         function startTimer() {
@@ -129,11 +187,7 @@
                 let secs = timeLeft % 60;
                 document.getElementById('timer').innerText = 
                     (mins < 10 ? "0" : "") + mins + ":" + (secs < 10 ? "0" : "") + secs;
-                
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    finishExam();
-                }
+                if (timeLeft <= 0) { clearInterval(timerInterval); finishExam(); }
             }, 1000);
         }
 
@@ -141,12 +195,10 @@
             let q = currentQuestions[currentIndex];
             document.getElementById('q-info-box').innerText = "Question " + (currentIndex + 1) + " of " + currentQuestions.length;
             document.getElementById('current-question-box').innerText = q.q;
-            
             document.getElementById('optA').innerText = "A) " + q.a;
             document.getElementById('optB').innerText = "B) " + q.b;
             document.getElementById('optC').innerText = "C) " + q.c;
             document.getElementById('optD').innerText = "D) " + q.d;
-
             resetOptions();
             selectedAnswer = null;
 
@@ -190,8 +242,7 @@
             }
         }
 
-        function adminFlow() { alert("Admin section is under development."); }
-        function showScanPage() { alert("Scan section is under development."); }
+        function showScanPage() { alert("Scan system በቅርቡ ይከፈታል!"); }
     </script>
 </body>
 </html>
