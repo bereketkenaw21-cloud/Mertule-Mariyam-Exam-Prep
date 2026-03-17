@@ -32,14 +32,14 @@
             cursor: pointer; margin: 10px; transition: 0.3s; width: 85%;
         }
         button:hover { transform: scale(1.05); box-shadow: 0 0 20px #00d2ff; }
-
+        
         /* ሰፊ የጥያቄና ምርጫ ሳጥኖች */
         .q-text { text-align: left; font-size: 1.2rem; margin-bottom: 20px; padding: 20px; background: rgba(0,0,0,0.4); border-radius: 20px; border-left: 5px solid #00d2ff; line-height: 1.4; }
-        .options-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        .options-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; width: 100%; }
         .option-card {
             background: rgba(255, 255, 255, 0.08); border: 1.5px solid rgba(255, 255, 255, 0.1);
             padding: 16px; border-radius: 15px; text-align: left; font-size: 1.1rem;
-            cursor: pointer; transition: 0.2s; display: flex; align-items: center;
+            cursor: pointer; transition: 0.2s; display: flex; align-items: center; width: 90%; margin: 0 auto;
         }
         .option-card.selected { background: #00d2ff; color: #000; font-weight: bold; border-color: white; }
         .opt-letter { background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 8px; margin-right: 12px; font-weight: bold; color: #ffd700; }
@@ -51,11 +51,8 @@
         }
         #timer { font-size: 1.5rem; color: #ff4b2b; font-weight: bold; margin-bottom: 15px; }
         .q-info { font-size: 0.9rem; color: #ffd700; margin-bottom: 5px; }
-        .status-msg { color: #ffd700; font-size: 0.9rem; margin: 5px; }
-        #install-box { background: #ffd700; color: #000; font-weight: bold; margin-bottom: 15px; display: none; }
         #reader { width: 100%; border-radius: 15px; overflow: hidden; background: white; }
         #qrcode { background: white; padding: 15px; display: inline-block; border-radius: 10px; margin-top: 10px; }
-        .review-item { text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 10px; }
     </style>
 </head>
 <body>
@@ -67,9 +64,8 @@
     </div>
 
     <div id="main-menu" class="container hidden">
-        <button id="install-box" onclick="installApp()">አፑን ስልክ ላይ ጫን (Install)</button>
         <h1>ምርጫዎን ያሳውቁ</h1>
-        <button onclick="showRoleSelection()">Start / ጀምር</button>
+        <button onclick="showScreen('role-page')">Start / ጀምር</button>
         <button onclick="showScanPage()" style="background: #9b59b6;">ጥያቄ በ QR Scan ተቀበል</button>
     </div>
 
@@ -81,75 +77,66 @@
 
     <div id="role-page" class="container hidden">
         <h1>ማን ነዎት?</h1>
-        <button onclick="studentFlow()">ተማሪ (Student)</button>
-        <button onclick="adminFlow()">አድሚን (Admin)</button>
-        <br><button style="background: grey; width: 40%;" onclick="backToMenu()">ወደ ኋላ</button>
+        <button onclick="isAdmin=false; showScreen('category-page')">ተማሪ (Student)</button>
+        <button onclick="showScreen('admin-login')">አድሚን (Admin)</button>
+        <br><button style="background: grey; width: 40%;" onclick="showScreen('main-menu')">ወደ ኋላ</button>
     </div>
 
     <div id="admin-login" class="container hidden">
         <h1>Admin Login</h1>
         <input type="password" id="admin-pass" placeholder="Password ያስገቡ...">
         <button onclick="checkAdminPass()">ግባ</button>
-        <button style="background: grey; width: 40%;" onclick="backToRole()">ወደ ኋላ</button>
+        <button style="background: grey; width: 40%;" onclick="showScreen('role-page')">ወደ ኋላ</button>
     </div>
 
     <div id="category-page" class="container hidden">
-        <h1 id="category-title">ዘርፍ ይምረጡ</h1>
+        <h1>ዘርፍ ይምረጡ</h1>
         <button onclick="showSubjects('Social')">Social Science</button>
         <button onclick="showSubjects('Natural')">Natural Science</button>
-        <br><button style="background: grey; width: 40%;" onclick="backToRole()">ወደ ኋላ</button>
+        <br><button style="background: grey; width: 40%;" onclick="showScreen('role-page')">ወደ ኋላ</button>
     </div>
 
     <div id="subject-page" class="container hidden">
         <h1 id="subject-title">ትምህርት ይምረጡ</h1>
         <div id="subject-list"></div>
-        
         <div id="admin-upload-area" class="hidden">
-            <p style="font-size: 0.8rem; color:#ffd700">አጻጻፍ: ጥያቄ # A # B # C # D | መልስ | ማብራሪያ</p>
+            <p style="font-size: 0.8rem; color:#ffd700">አጻጻፍ: ጥያቄ # A # B # C # D | መልስ</p>
             <textarea id="question-input" rows="5" placeholder="ጥያቄ እዚህ ይጻፉ..."></textarea>
-            <div id="ocr-status" class="status-msg"></div>
             <button onclick="saveQuestions()" style="background: #28a745;">ጥያቄዎቹን ጫን</button>
             <button onclick="generateQR()" style="background: #9b59b6;">ለተማሪዎች አጋራ (QR)</button>
             <div id="qrcode" class="hidden"></div>
             <input type="file" id="camera-file" accept="image/*" capture="environment" class="hidden" onchange="handleOCR(this)">
             <button onclick="document.getElementById('camera-file').click()" style="background: #e67e22;">📷 በካሜራ አንሳ</button>
         </div>
-        <button style="background: grey; width: 40%;" onclick="backToCategory()">ወደ ኋላ</button>
+        <button style="background: grey; width: 40%;" onclick="showScreen('category-page')">ወደ ኋላ</button>
     </div>
 
     <div id="exam-page" class="container hidden">
         <div id="timer">60:00</div>
         <div id="q-info-box" class="q-info"></div>
         <div id="current-question-box" class="q-text"></div>
-        
-        <div class="options-container" id="options-box"></div>
-
+        <div id="options-box" class="options-container"></div>
         <div style="display: flex; justify-content: space-around;">
             <button id="prev-btn" onclick="goBack()" style="width: 45%; background: #e67e22;">Back</button>
             <button onclick="nextQuestion()" style="width: 45%;">Next</button>
         </div>
-        <button id="submit-btn" onclick="finishExam()" class="hidden" style="background: #27ae60; margin-top: 15px;">ጨርስ (Submit)</button>
+        <button id="submit-btn" onclick="finishExam()" class="hidden" style="background: #27ae60; margin-top: 15px;">Submit</button>
     </div>
 
     <div id="result-page" class="container hidden">
         <h1>ውጤትዎ</h1>
-        <h2 id="final-score-display"></h2>
-        <div id="review-area" style="max-height: 300px; overflow-y: auto;"></div>
+        <h2 id="final-score-display" style="font-size: 3rem; color: #00d2ff;"></h2>
         <button onclick="location.reload()">እንደገና ጀምር</button>
     </div>
 
     <script>
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+        let isAdmin = false, selectedSubject = "", currentQuestions = [], currentIndex = 0, timerSeconds = 3600, studentAnswers = [];
 
-        let isAdmin = false, selectedSubject = "", currentQuestions = [], currentIndex = 0, timerSeconds = 3600, score = 0, studentAnswers = [], maxReachedIndex = 0;
-
-        const screens = ['splash', 'main-menu', 'role-page', 'admin-login', 'category-page', 'subject-page', 'exam-page', 'scan-page', 'result-page'];
-        function showScreen(id) { screens.forEach(s => document.getElementById(s).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
-        setTimeout(() => showScreen('main-menu'), 4000);
-
-        function showRoleSelection() { showScreen('role-page'); }
-        function studentFlow() { isAdmin = false; showScreen('category-page'); }
-        function adminFlow() { showScreen('admin-login'); }
+        function showScreen(id) {
+            document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+        setTimeout(() => showScreen('main-menu'), 3000);
 
         function checkAdminPass() {
             if(document.getElementById('admin-pass').value === "Mertule Mariyam@2026") { isAdmin = true; showScreen('category-page'); } 
@@ -158,10 +145,8 @@
 
         function showSubjects(type) {
             showScreen('subject-page');
-            const list = document.getElementById('subject-list');
-            list.innerHTML = "";
-            const common = ['English', 'Maths'], natural = ['Physics', 'Chemistry', 'Biology', 'Civics'], social = ['Geography', 'History', 'Economics'];
-            let subs = (type === 'Natural') ? [...common, ...natural] : [...common, ...social];
+            const list = document.getElementById('subject-list'); list.innerHTML = "";
+            const subs = type === 'Natural' ? ['Physics', 'Chemistry', 'Biology', 'Maths'] : ['History', 'Geography', 'Economics', 'Civics'];
             subs.forEach(s => {
                 const btn = document.createElement('button'); btn.innerText = s;
                 btn.onclick = () => selectSubject(s); list.appendChild(btn);
@@ -173,8 +158,7 @@
             if(isAdmin) {
                 document.getElementById('subject-list').classList.add('hidden');
                 document.getElementById('admin-upload-area').classList.remove('hidden');
-                document.getElementById('subject-title').innerText = s + " ጥያቄ መጫኛ";
-                document.getElementById('question-input').value = localStorage.getItem('exam_' + selectedSubject) || "";
+                document.getElementById('question-input').value = localStorage.getItem('exam_' + s) || "";
             } else { startExam(s); }
         }
 
@@ -192,13 +176,12 @@
         }
 
         function updateQuestion() {
-            document.getElementById('q-info-box').innerText = "ጥያቄ " + (currentIndex + 1) + " ከ " + currentQuestions.length;
+            document.getElementById('q-info-box').innerText = "Question " + (currentIndex + 1) + " of " + currentQuestions.length;
             const parts = currentQuestions[currentIndex].split('|');
             const qAndOpts = parts[0].split('#'); 
             
             document.getElementById('current-question-box').innerText = qAndOpts[0].trim();
-            const box = document.getElementById('options-box');
-            box.innerHTML = "";
+            const box = document.getElementById('options-box'); box.innerHTML = "";
 
             const labels = ['A', 'B', 'C', 'D'];
             for(let i=1; i<=4; i++) {
@@ -209,13 +192,11 @@
                 card.onclick = () => { studentAnswers[currentIndex] = labels[i-1]; updateQuestion(); };
                 box.appendChild(card);
             }
-            
-            document.getElementById('prev-btn').style.visibility = (currentIndex > 0) ? "visible" : "hidden";
             if(currentIndex === currentQuestions.length - 1) document.getElementById('submit-btn').classList.remove('hidden');
         }
 
         function nextQuestion() {
-            if(!studentAnswers[currentIndex]) return alert("እባክዎ መጀመሪያ መልስ ይምረጡ!");
+            if(!studentAnswers[currentIndex]) return alert("መልስ ይምረጡ!");
             if(currentIndex < currentQuestions.length - 1) { currentIndex++; updateQuestion(); }
             else { finishExam(); }
         }
@@ -224,15 +205,8 @@
 
         function finishExam() {
             showScreen('result-page');
-            score = 0;
-            const area = document.getElementById('review-area'); area.innerHTML = "";
-            currentQuestions.forEach((q, i) => {
-                const p = q.split('|'), correct = p[1].trim().toUpperCase(), mine = studentAnswers[i];
-                if(mine === correct) score++;
-                area.innerHTML += `<div class="review-item"><p><b>Q${i+1}:</b> ${p[0].split('#')[0]}</p>
-                    <p style="color:${mine==correct?'#2ecc71':'#e74c3c'}">የናንተ መልስ: ${mine}</p>
-                    <p style="color:#2ecc71">ትክክል: ${correct}</p></div>`;
-            });
+            let score = 0;
+            currentQuestions.forEach((q, i) => { if(studentAnswers[i] === q.split('|')[1].trim().toUpperCase()) score++; });
             document.getElementById('final-score-display').innerText = score + " / " + currentQuestions.length;
         }
 
@@ -240,46 +214,34 @@
             setInterval(() => {
                 if(timerSeconds > 0) {
                     timerSeconds--;
-                    let min = Math.floor(timerSeconds / 60), sec = timerSeconds % 60;
-                    document.getElementById('timer').innerText = `${min}:${sec < 10 ? '0'+sec : sec}`;
+                    let m = Math.floor(timerSeconds/60), s = timerSeconds%60;
+                    document.getElementById('timer').innerText = `${m}:${s < 10 ? '0'+s : s}`;
                 }
             }, 1000);
         }
 
         function generateQR() {
             const data = localStorage.getItem('exam_' + selectedSubject);
-            if(!data) return alert("ጥያቄ የለም!");
-            const qrBox = document.getElementById('qrcode');
-            qrBox.innerHTML = ""; qrBox.classList.remove('hidden');
-            new QRCode(qrBox, { text: "SUB:"+selectedSubject+"#"+data, width: 180, height: 180 });
+            new QRCode(document.getElementById('qrcode'), { text: "SUB:"+selectedSubject+"#"+data, width: 150, height: 150 });
+            document.getElementById('qrcode').classList.remove('hidden');
         }
 
         let html5QrCode;
         function showScanPage() {
             showScreen('scan-page');
             html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => {
-                const parts = decodedText.split('#');
-                const subName = parts[0].replace("SUB:", "");
-                localStorage.setItem('exam_' + subName, parts[1]);
-                alert(subName + " ጥያቄዎች ደርሰዋል!");
-                stopScanner(); showScreen('main-menu');
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
+                const parts = text.split('#');
+                localStorage.setItem('exam_' + parts[0].replace("SUB:", ""), parts[1]);
+                alert("ተቀብለናል!"); stopScanner(); showScreen('main-menu');
             }).catch(()=>{});
         }
         function stopScanner() { if(html5QrCode) html5QrCode.stop(); }
 
         function handleOCR(input) {
-            const file = input.files[0]; if (!file) return;
-            document.getElementById('ocr-status').innerText = "እየተቀየረ ነው...";
-            Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
-                document.getElementById('question-input').value = text;
-                document.getElementById('ocr-status').innerText = "ተጠናቋል!";
-            });
+            const file = input.files[0];
+            Tesseract.recognize(file, 'eng').then(({ data: { text } }) => { document.getElementById('question-input').value = text; });
         }
-
-        function backToMenu() { showScreen('main-menu'); }
-        function backToRole() { showScreen('role-page'); }
-        function backToCategory() { showScreen('category-page'); }
     </script>
 </body>
 </html>
