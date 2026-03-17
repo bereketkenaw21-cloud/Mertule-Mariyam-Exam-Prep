@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mertule Mariyam Exam Prep</title>
     
-    <meta name="theme-color" content="#302b63">
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJhbSIsCiAgIm5hbWUiOiAiTWVydHVsZSBNYXJpeWFtIEV4YW0iLAogICJzaG9ydF9uYW1lIjogIk1NIEV4YW0iLAogICJzdGFydF91cmwiOiAiLi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwZjBjMjkiLAogICJ0aGVtZV9jb2xvciI6ICIjMzAybjYzIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsaXRpY29uLmNvbS81MTIvMjk5Ny8yOTk3OTExLnBuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIgogICAgfQogIF0KfQ==">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="MM Exam">
+    <meta name="theme-color" content="#302b63">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -40,15 +41,15 @@
         #qrcode-output { background: white; padding: 15px; display: inline-block; border-radius: 10px; margin: 10px; }
         
         /* Install Button Style */
-        #install-banner {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: #27ae60; z-index: 1000; width: 80%;
+        #install-btn {
+            position: fixed; top: 10px; right: 10px; background: #27ae60; 
+            padding: 8px 15px; font-size: 0.8rem; z-index: 2000; width: auto;
         }
     </style>
 </head>
 <body>
 
-    <button id="install-banner" class="hidden">አፑን ስልክዎ ላይ ይጫኑ (Install App)</button>
+    <button id="install-btn" class="hidden">Install App</button>
 
     <div id="splash" class="container">
         <div style="font-size:70px">🎓</div>
@@ -92,76 +93,72 @@
 
     <div id="admin-upload-page" class="container hidden">
         <h1 id="admin-sub-title">ጥያቄ መጫኛ</h1>
-        
         <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none" onchange="processImage(this)">
         <button onclick="document.getElementById('camera-input').click()" style="background:#e67e22">📷 ፎቶ አንሳ (OCR)</button>
-
-        <textarea id="smart-paste-input" class="smart-paste-box" placeholder="ጽሑፉን እዚህ ይለጥፉ ወይም በፎቶ ያንሱ..."></textarea>
-        <button onclick="autoExtractData()" style="background:#3498db">ዳታውን ለይ (Extract)</button>
-        
+        <textarea id="smart-paste-input" class="smart-paste-box" placeholder="ጽሑፉን እዚህ ይለጥፉ..."></textarea>
+        <button onclick="autoExtractData()" style="background:#3498db">ዳታውን ለይ</button>
         <hr>
         <textarea id="admin-q-text" placeholder="ጥያቄው..."></textarea>
-        <input id="admin-optA" placeholder="ምርጫ A">
-        <input id="admin-optB" placeholder="ምርጫ B">
-        <input id="admin-optC" placeholder="ምርጫ C">
-        <input id="admin-optD" placeholder="ምርጫ D">
+        <input id="admin-optA" placeholder="A"> <input id="admin-optB" placeholder="B">
+        <input id="admin-optC" placeholder="C"> <input id="admin-optD" placeholder="D">
         <select id="admin-correct">
             <option value="">ትክክለኛ መልስ</option>
             <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
         </select>
-        
-        <button onclick="saveAdminQuestion()" style="background:#27ae60">ጥያቄውን መዝግብ</button>
-        <button onclick="generateSubjectQR()" style="background:#8e44ad">ለተማሪዎች QR አውጣ</button>
-        
-        <div id="qrcode-container" class="hidden" style="background:white; border-radius:15px; margin-top:10px; color:black;">
+        <button onclick="saveAdminQuestion()" style="background:#27ae60">መዝግብ</button>
+        <button onclick="generateSubjectQR()" style="background:#8e44ad">QR አውጣ</button>
+        <div id="qrcode-container" class="hidden" style="background:white; color:black;">
             <div id="qrcode-output"></div>
-            <p>ይህንን QR ለተማሪዎች ያሳዩ</p>
-            <button onclick="document.getElementById('qrcode-container').classList.add('hidden')" style="background:#636e72; width:50%">ዝጋ</button>
+            <button onclick="document.getElementById('qrcode-container').classList.add('hidden')">ዝጋ</button>
         </div>
-
         <button onclick="showScreen('subject-page')" style="background:#636e72">ተመለስ</button>
     </div>
 
     <div id="exam-page" class="container hidden">
         <div id="timer" style="font-size:2rem; color:#ff4b2b">60:00</div>
-        <div id="q-text-display" style="text-align:left; padding:15px; background:rgba(0,0,0,0.3); border-radius:15px; margin:10px 0;"></div>
+        <div id="q-text-display"></div>
         <div id="options-area"></div>
-        <button id="next-btn" onclick="nextQuestion()">ቀጣይ (Next)</button>
-        <button id="submit-btn" class="hidden" onclick="finishExam()" style="background:#27ae60">ጨርስ (Submit)</button>
+        <button id="next-btn" onclick="nextQuestion()">ቀጣይ</button>
+        <button id="submit-btn" class="hidden" onclick="finishExam()">ጨርስ</button>
     </div>
 
     <div id="result-page" class="container hidden">
-        <h1>ውጤትዎ</h1>
-        <h2 id="score-display" style="font-size:3rem; color:#ffd700"></h2>
-        <button onclick="location.reload()">እንደገና ጀምር</button>
+        <h1>ውጤት</h1>
+        <h2 id="score-display"></h2>
+        <button onclick="location.reload()">እንደገና</button>
     </div>
 
     <script>
-        // --- INSTALL LOGIC ---
+        // --- 100% Offline Service Worker ---
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
+                self.addEventListener('install', e => e.waitUntil(caches.open('v1').then(c => c.addAll(['./']))));
+                self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+            `));
+        }
+
+        // --- Install Prompt ---
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            document.getElementById('install-banner').classList.remove('hidden');
+            document.getElementById('install-btn').classList.remove('hidden');
         });
 
-        document.getElementById('install-banner').addEventListener('click', async () => {
+        document.getElementById('install-btn').addEventListener('click', async () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    document.getElementById('install-banner').classList.add('hidden');
-                }
+                if (outcome === 'accepted') document.getElementById('install-btn').classList.add('hidden');
                 deferredPrompt = null;
             }
         });
 
-        // --- ORIGINAL APP LOGIC ---
+        // --- Original Logic ---
         let db = JSON.parse(localStorage.getItem('mertuleDB')) || {"English":[], "Maths":[], "Physics":[], "Chemistry":[], "Biology":[], "Geography":[], "History":[], "Economics":[]};
-        let isAdmin = false, activeSub = "", currentQs = [], qIdx = 0, score = 0, timer;
-        let html5QrCode;
+        let isAdmin = false, activeSub = "", currentQs = [], qIdx = 0, score = 0, html5QrCode;
 
-        setTimeout(() => showScreen('main-menu'), 4000);
+        setTimeout(() => showScreen('main-menu'), 3000);
 
         function showScreen(id) {
             document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
@@ -171,12 +168,9 @@
         async function processImage(input) {
             if (input.files && input.files[0]) {
                 const status = document.getElementById('smart-paste-input');
-                status.value = "ጽሑፉን ከፎቶው ላይ እያነበብኩ ነው... (ትንሽ ይጠብቁ)";
-                try {
-                    const result = await Tesseract.recognize(input.files[0], 'eng');
-                    status.value = result.data.text;
-                    alert("ጽሑፉ ተነቧል! አሁን 'ዳታውን ለይ' የሚለውን ይጫኑ።");
-                } catch (e) { alert("መነብ አልተቻለም!"); }
+                status.value = "በማንበብ ላይ...";
+                const result = await Tesseract.recognize(input.files[0], 'eng');
+                status.value = result.data.text;
             }
         }
 
@@ -192,20 +186,12 @@
             html5QrCode = new Html5Qrcode("qr-reader");
             html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
                 let data = JSON.parse(text);
-                if(data.s && data.q) {
-                    db[data.s] = data.q;
-                    localStorage.setItem('mertuleDB', JSON.stringify(db));
-                    alert(data.s + " ጥያቄዎች ገብተዋል!");
-                    stopQRScanner();
-                }
-            }).catch(() => alert("ካሜራ አልተገኘም"));
+                if(data.s) { db[data.s] = data.q; localStorage.setItem('mertuleDB', JSON.stringify(db)); stopQRScanner(); }
+            });
         }
-
         function stopQRScanner() { if(html5QrCode) html5QrCode.stop(); showScreen('main-menu'); }
 
-        function adminLoginFlow() {
-            if(prompt("Password:") === "Mertule Mariyam@2026") { isAdmin = true; showScreen('stream-page'); }
-        }
+        function adminLoginFlow() { if(prompt("Pass:") === "Mertule Mariyam@2026") { isAdmin = true; showScreen('stream-page'); } }
         function studentFlow() { isAdmin = false; showScreen('stream-page'); }
 
         function selectStream(stream) {
@@ -214,11 +200,7 @@
             let subs = stream === 'Natural' ? ["English","Maths","Physics","Chemistry","Biology"] : ["English","Maths","Geography","History","Economics"];
             subs.forEach(s => {
                 let b = document.createElement('button'); b.innerText = s;
-                b.onclick = () => { 
-                    activeSub = s; 
-                    if(isAdmin) { document.getElementById('admin-sub-title').innerText = s+" መጫኛ"; showScreen('admin-upload-page'); }
-                    else startExam(s);
-                };
+                b.onclick = () => { activeSub = s; if(isAdmin) showScreen('admin-upload-page'); else startExam(s); };
                 list.appendChild(b);
             });
         }
@@ -227,7 +209,7 @@
             let raw = document.getElementById('smart-paste-input').value;
             let p = raw.split(/\s[A-D][\)\.\s]/i);
             if(p.length >= 5) {
-                document.getElementById('admin-q-text').value = p[0].trim().replace(/^\d+[\.\)]\s*/, '');
+                document.getElementById('admin-q-text').value = p[0].trim();
                 document.getElementById('admin-optA').value = p[1].trim();
                 document.getElementById('admin-optB').value = p[2].trim();
                 document.getElementById('admin-optC').value = p[3].trim();
@@ -252,7 +234,6 @@
             const area = document.getElementById('options-area'); area.innerHTML = "";
             ['a','b','c','d'].forEach(o => {
                 let b = document.createElement('button'); b.innerText = o.toUpperCase()+") "+q[o];
-                b.style.background = "rgba(255,255,255,0.1)";
                 b.onclick = () => { 
                     Array.from(area.children).forEach(btn => btn.style.background = "rgba(255,255,255,0.1)");
                     b.style.background = "#00d2ff"; b.dataset.ans = o.toUpperCase();
