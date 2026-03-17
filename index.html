@@ -13,23 +13,27 @@
         }
         .container {
             background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px);
-            border-radius: 30px; padding: 40px; border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px; padding: 25px; border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 15px 35px rgba(0,0,0,0.5); width: 85%; max-width: 500px;
+            max-height: 90vh; overflow-y: auto;
         }
         .hidden { display: none !important; }
-        h1 { font-size: 1.8rem; color: #00d2ff; }
-        .creator { font-weight: bold; color: #ffd700; font-size: 1.2rem; margin-top: 20px; }
-        .cap-icon { font-size: 80px; margin-bottom: 10px; }
+        h1 { font-size: 1.6rem; color: #00d2ff; }
+        .creator { font-weight: bold; color: #ffd700; font-size: 1.1rem; margin-top: 10px; }
+        .cap-icon { font-size: 70px; margin-bottom: 5px; }
         
         button {
             background: linear-gradient(to right, #00d2ff, #3a7bd5); color: white;
-            border: none; padding: 15px 30px; border-radius: 50px; font-size: 1.1rem;
+            border: none; padding: 12px 25px; border-radius: 50px; font-size: 1.1rem;
             cursor: pointer; margin: 10px; transition: 0.3s; width: 80%;
         }
         button:hover { transform: scale(1.05); box-shadow: 0 0 20px #00d2ff; }
-        input {
+        input, textarea {
             width: 80%; padding: 12px; margin: 10px; border-radius: 10px; border: none; outline: none;
+            background: rgba(255, 255, 255, 0.2); color: white;
         }
+        #timer { font-size: 1.5rem; color: #ff4b2b; font-weight: bold; margin-bottom: 15px; }
+        .q-text { text-align: left; font-size: 1.1rem; margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -42,7 +46,7 @@
 
     <div id="main-menu" class="container hidden">
         <div style="text-align: right; margin-bottom: 10px;">
-            <select style="padding: 5px; border-radius: 5px;">
+            <select id="lang" style="padding: 5px; border-radius: 5px;">
                 <option>አማርኛ</option>
                 <option>English</option>
             </select>
@@ -75,71 +79,140 @@
     <div id="subject-page" class="container hidden">
         <h1 id="subject-title">ትምህርት ይምረጡ</h1>
         <div id="subject-list"></div>
+        <div id="admin-upload-area" class="hidden">
+            <textarea id="question-input" rows="5" placeholder="ጥያቄዎችን እዚህ ፔስት ያድርጉ..."></textarea>
+            <button onclick="saveQuestions()" style="background: #28a745;">ጥያቄዎቹን ጫን</button>
+            <button onclick="alert('ካሜራው እየተዘጋጀ ነው...')" style="background: #e67e22;">📷 በካሜራ አንሳ</button>
+        </div>
         <button style="background: grey; width: 40%;" onclick="backToCategory()">ወደ ኋላ</button>
     </div>
 
+    <div id="exam-page" class="container hidden">
+        <div id="timer">60:00</div>
+        <div id="current-question-box" class="q-text"></div>
+        <input type="text" id="student-answer" placeholder="መልስዎን እዚህ ይጻፉ (A, B, C, D)">
+        <button onclick="nextQuestion()">ቀጣይ (Next)</button>
+        <button id="submit-btn" onclick="finishExam()" class="hidden" style="background: #27ae60;">ጨርስ (Submit)</button>
+    </div>
+
     <script>
-        // Logic for screens
-        const splash = document.getElementById('splash');
-        const mainMenu = document.getElementById('main-menu');
-        const rolePage = document.getElementById('role-page');
-        const adminLogin = document.getElementById('admin-login');
-        const categoryPage = document.getElementById('category-page');
-        const subjectPage = document.getElementById('subject-page');
+        // Global variables
+        let isAdmin = false;
+        let selectedSubject = "";
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let timerSeconds = 3600;
 
-        // 1. Splash Screen Timer (5 Seconds)
-        setTimeout(() => {
-            splash.classList.add('hidden');
-            mainMenu.classList.remove('hidden');
-        }, 5000);
+        const screens = ['splash', 'main-menu', 'role-page', 'admin-login', 'category-page', 'subject-page', 'exam-page'];
 
-        function showRoleSelection() {
-            mainMenu.classList.add('hidden');
-            rolePage.classList.remove('hidden');
+        function showScreen(id) {
+            screens.forEach(s => document.getElementById(s).classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
         }
 
-        function studentFlow() {
-            rolePage.classList.add('hidden');
-            categoryPage.classList.remove('hidden');
-            document.getElementById('category-title').innerText = "የተማሪ ገጽ - ዘርፍ ይምረጡ";
-        }
+        // 1. Splash Screen Timer
+        setTimeout(() => showScreen('main-menu'), 5000);
 
-        function adminFlow() {
-            rolePage.classList.add('hidden');
-            adminLogin.classList.remove('hidden');
-        }
+        function showRoleSelection() { showScreen('role-page'); }
+        function studentFlow() { isAdmin = false; showScreen('category-page'); }
+        function adminFlow() { showScreen('admin-login'); }
 
         function checkAdminPass() {
-            const pass = document.getElementById('admin-pass').value;
-            if(pass === "Mertule Mariyam@2026") {
-                adminLogin.classList.add('hidden');
-                categoryPage.classList.remove('hidden');
-                document.getElementById('category-title').innerText = "የአድሚን ገጽ - ዘርፍ ይምረጡ";
-            } else {
-                alert("የተሳሳተ ፓስወርድ ነው!");
-            }
+            if(document.getElementById('admin-pass').value === "Mertule Mariyam@2026") {
+                isAdmin = true;
+                showScreen('category-page');
+            } else { alert("የተሳሳተ ፓስወርድ ነው!"); }
         }
 
         function showSubjects(type) {
-            categoryPage.classList.add('hidden');
-            subjectPage.classList.remove('hidden');
+            showScreen('subject-page');
             const list = document.getElementById('subject-list');
             list.innerHTML = "";
-            
             const subs = type === 'Social' ? ['Geography', 'History', 'Economics'] : ['Biology', 'Physics', 'Chemistry'];
             
             subs.forEach(s => {
                 const btn = document.createElement('button');
                 btn.innerText = s;
-                btn.onclick = () => alert(s + " በቅርቡ ይጫናል!");
+                btn.onclick = () => selectSubject(s);
                 list.appendChild(btn);
             });
         }
 
-        // Navigation Back functions
-        function backToMenu() { rolePage.classList.add('hidden'); mainMenu.classList.remove('hidden'); }
-        function backToRole() { adminLogin.classList.add('hidden'); categoryPage.classList.add('hidden'); rolePage.classList.remove('hidden'); }
-        function backToCategory() { subjectPage.classList.add('hidden'); categoryPage.classList.remove('hidden'); }
+        function selectSubject(s) {
+            selectedSubject = s;
+            if(isAdmin) {
+                document.getElementById('subject-list').classList.add('hidden');
+                document.getElementById('admin-upload-area').classList.remove('hidden');
+                document.getElementById('subject-title').innerText = s + " ጥያቄ መጫኛ";
+            } else {
+                startExam(s);
+            }
+        }
+
+        // Admin Save Logic
+        function saveQuestions() {
+            const input = document.getElementById('question-input').value;
+            if(!input) return alert("እባክዎ ጥያቄ ያስገቡ!");
+            localStorage.setItem('exam_' + selectedSubject, input);
+            alert(selectedSubject + " ጥያቄዎች በስኬት ተጭነዋል!");
+            backToCategory();
+        }
+
+        // Student Exam Logic
+        function startExam(s) {
+            const data = localStorage.getItem('exam_' + s);
+            if(!data) return alert("ለዚህ ትምህርት ጥያቄ ገና አልተጫነም!");
+            
+            currentQuestions = data.split('\n').filter(q => q.trim() !== "");
+            currentIndex = 0;
+            showScreen('exam-page');
+            updateQuestion();
+            startTimer();
+        }
+
+        function updateQuestion() {
+            document.getElementById('current-question-box').innerText = currentQuestions[currentIndex];
+            document.getElementById('student-answer').value = "";
+            if(currentIndex === currentQuestions.length - 1) {
+                document.getElementById('submit-btn').classList.remove('hidden');
+            }
+        }
+
+        function nextQuestion() {
+            if(!document.getElementById('student-answer').value) return alert("መልስ ሳይሰጡ ማለፍ አይቻልም!");
+            if(currentIndex < currentQuestions.length - 1) {
+                currentIndex++;
+                updateQuestion();
+            }
+        }
+
+        function startTimer() {
+            const t = setInterval(() => {
+                timerSeconds--;
+                let min = Math.floor(timerSeconds / 60);
+                let sec = timerSeconds % 60;
+                document.getElementById('timer').innerText = `${min}:${sec < 10 ? '0'+sec : sec}`;
+                if(timerSeconds <= 0) {
+                    clearInterval(t);
+                    alert("ጊዜዎ አልቋል!");
+                    finishExam();
+                }
+            }, 1000);
+        }
+
+        function finishExam() {
+            alert("ፈተናውን ጨርሰዋል። ውጤትዎ በቅርቡ ይታወቃል!");
+            location.reload();
+        }
+
+        // Navigation
+        function backToMenu() { showScreen('main-menu'); }
+        function backToRole() { showScreen('role-page'); }
+        function backToCategory() { 
+            showScreen('category-page'); 
+            document.getElementById('subject-list').classList.remove('hidden');
+            document.getElementById('admin-upload-area').classList.add('hidden');
+        }
     </script>
 </body>
 </html>
