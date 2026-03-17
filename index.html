@@ -37,6 +37,7 @@
             background: rgba(255, 255, 255, 0.2); color: white;
         }
         #timer { font-size: 1.5rem; color: #ff4b2b; font-weight: bold; margin-bottom: 15px; }
+        .q-info { font-size: 0.9rem; color: #ffd700; margin-bottom: 5px; }
         .q-text { text-align: left; font-size: 1.1rem; margin-bottom: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 15px; }
         .status-msg { color: #ffd700; font-size: 0.9rem; margin: 5px; }
         #install-box { background: #ffd700; color: #000; font-weight: bold; margin-bottom: 15px; display: none; }
@@ -92,7 +93,7 @@
         <div id="subject-list"></div>
         
         <div id="admin-upload-area" class="hidden">
-            <textarea id="question-input" rows="5" placeholder="ጥያቄ | መልስ | ማብራሪያ (እስከ 100 ጥያቄ)"></textarea>
+            <textarea id="question-input" rows="5" placeholder="ጥያቄ | መልስ | ማብራሪያ"></textarea>
             <div id="ocr-status" class="status-msg"></div>
             <button onclick="saveQuestions()" style="background: #28a745;">ጥያቄዎቹን ጫን</button>
             <button onclick="generateQR()" style="background: #9b59b6;">ለተማሪዎች አጋራ (QR)</button>
@@ -105,10 +106,14 @@
 
     <div id="exam-page" class="container hidden">
         <div id="timer">60:00</div>
+        <div id="q-info-box" class="q-info"></div>
         <div id="current-question-box" class="q-text"></div>
         <input type="text" id="student-answer" placeholder="መልስዎን እዚህ ይጻፉ (A, B, C, D)">
-        <button onclick="nextQuestion()">ቀጣይ (Next)</button>
-        <button id="submit-btn" onclick="finishExam()" class="hidden" style="background: #27ae60;">ጨርስ (Submit)</button>
+        <div style="display: flex; justify-content: space-around;">
+            <button id="prev-btn" onclick="goBack()" style="width: 45%; background: #e67e22;">ወደ ኋላ (Back)</button>
+            <button onclick="nextQuestion()" style="width: 45%;">ቀጣይ (Next)</button>
+        </div>
+        <button id="submit-btn" onclick="finishExam()" class="hidden" style="background: #27ae60; margin-top: 15px;">ጨርስ (Submit)</button>
     </div>
 
     <div id="result-page" class="container hidden">
@@ -119,57 +124,32 @@
     </div>
 
     <script>
-        // --- PWA & Offline Support ---
         if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); deferredPrompt = e;
-            document.getElementById('install-box').style.display = 'block';
-        });
-
-        function installApp() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(() => document.getElementById('install-box').style.display = 'none');
-            }
-        }
-
-        // --- Core Logic ---
-        let isAdmin = false;
-        let selectedSubject = "";
-        let currentQuestions = [];
-        let currentIndex = 0;
-        let timerSeconds = 3600;
-        let score = 0;
-        let examResults = [];
+        let isAdmin = false, selectedSubject = "", currentQuestions = [], currentIndex = 0, timerSeconds = 3600, score = 0, examResults = [], studentAnswers = [], maxReachedIndex = 0;
 
         const screens = ['splash', 'main-menu', 'role-page', 'admin-login', 'category-page', 'subject-page', 'exam-page', 'scan-page', 'result-page'];
-
-        function showScreen(id) {
-            screens.forEach(s => document.getElementById(s).classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        setTimeout(() => showScreen('main-menu'), 5000);
+        function showScreen(id) { screens.forEach(s => document.getElementById(s).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+        setTimeout(() => showScreen('main-menu'), 4000);
 
         function showRoleSelection() { showScreen('role-page'); }
         function studentFlow() { isAdmin = false; showScreen('category-page'); }
         function adminFlow() { showScreen('admin-login'); }
 
         function checkAdminPass() {
-            if(document.getElementById('admin-pass').value === "Mertule Mariyam@2026") {
-                isAdmin = true; showScreen('category-page');
-            } else { alert("የተሳሳተ ፓስወርድ ነው!"); }
+            if(document.getElementById('admin-pass').value === "Mertule Mariyam@2026") { isAdmin = true; showScreen('category-page'); } 
+            else { alert("የተሳሳተ ፓስወርድ ነው!"); }
         }
 
         function showSubjects(type) {
             showScreen('subject-page');
             const list = document.getElementById('subject-list');
             list.innerHTML = "";
-            const subs = type === 'Natural' ? 
-                ['English', 'Maths_Nat', 'Physics', 'Chemistry', 'Biology', 'Civics'] : 
-                ['English', 'Maths_Soc', 'Geography', 'History', 'Economics'];
+            const common = ['English', 'Maths'];
+            const natural = ['Physics', 'Chemistry', 'Biology', 'Civics'];
+            const social = ['Geography', 'History', 'Economics'];
+            
+            let subs = (type === 'Natural') ? [...common, ...natural] : [...common, ...social];
             
             subs.forEach(s => {
                 const btn = document.createElement('button');
@@ -189,13 +169,12 @@
             } else { startExam(s); }
         }
 
-        // --- QR Code Sharing ---
         function generateQR() {
             const data = localStorage.getItem('exam_' + selectedSubject);
             if(!data) return alert("ጥያቄ የለም!");
             const qrBox = document.getElementById('qrcode');
             qrBox.innerHTML = ""; qrBox.classList.remove('hidden');
-            new QRCode(qrBox, { text: "SUB:"+selectedSubject+"#"+data, width: 200, height: 200 });
+            new QRCode(qrBox, { text: "SUB:"+selectedSubject+"#"+data, width: 180, height: 180 });
         }
 
         let html5QrCode;
@@ -206,13 +185,12 @@
                 const parts = decodedText.split('#');
                 const subName = parts[0].replace("SUB:", "");
                 localStorage.setItem('exam_' + subName, parts[1]);
-                alert(subName + " ጥያቄዎች ደርሰዋል!");
+                alert(subName + " ጥያቄዎች በስኬት ደርሰዋል!");
                 stopScanner(); showScreen('main-menu');
             }).catch(()=>{});
         }
         function stopScanner() { if(html5QrCode) html5QrCode.stop(); }
 
-        // --- OCR ---
         function handleOCR(input) {
             const file = input.files[0];
             if (!file) return;
@@ -225,51 +203,69 @@
 
         function saveQuestions() {
             localStorage.setItem('exam_' + selectedSubject, document.getElementById('question-input').value);
-            alert("በስኬት ተቀምጧል!");
+            alert("ተቀምጧል!");
         }
 
-        // --- Exam Engine ---
         function startExam(s) {
             const data = localStorage.getItem('exam_' + s);
             if(!data) return alert("ጥያቄ አልተጫነም!");
             currentQuestions = data.split('\n').filter(q => q.includes('|'));
-            currentIndex = 0; score = 0; examResults = [];
+            currentIndex = 0; maxReachedIndex = 0; score = 0; examResults = [];
+            studentAnswers = new Array(currentQuestions.length).fill("");
             showScreen('exam-page'); updateQuestion(); startTimer();
         }
 
         function updateQuestion() {
+            document.getElementById('q-info-box').innerText = "Question " + (currentIndex + 1) + " of " + currentQuestions.length;
             const parts = currentQuestions[currentIndex].split('|');
-            document.getElementById('current-question-box').innerText = (currentIndex+1) + ". " + parts[0];
-            document.getElementById('student-answer').value = "";
+            document.getElementById('current-question-box').innerText = parts[0];
+            document.getElementById('student-answer').value = studentAnswers[currentIndex];
+            
+            // Back button logic: only up to 3 questions back
+            document.getElementById('prev-btn').style.visibility = (currentIndex > 0 && currentIndex > maxReachedIndex - 3) ? "visible" : "hidden";
+            
             if(currentIndex === currentQuestions.length - 1) document.getElementById('submit-btn').classList.remove('hidden');
         }
 
         function nextQuestion() {
             const ans = document.getElementById('student-answer').value.trim().toUpperCase();
-            if(!ans) return alert("መልስ ይሙሉ።");
-            const parts = currentQuestions[currentIndex].split('|');
-            const correct = parts[1].trim().toUpperCase();
+            if(!ans) return alert("እባክዎ መጀመሪያ መልስ ይጻፉ!");
+            studentAnswers[currentIndex] = ans;
             
-            if(ans === correct) score++;
-            examResults.push({q: parts[0], mine: ans, correct: correct, exp: parts[2] || "ማብራሪያ የለውም"});
-
+            if(currentIndex === maxReachedIndex) maxReachedIndex++;
+            
             if(currentIndex < currentQuestions.length - 1) { currentIndex++; updateQuestion(); }
             else { finishExam(); }
         }
 
+        function goBack() {
+            if(currentIndex > 0 && currentIndex > maxReachedIndex - 3) {
+                currentIndex--; updateQuestion();
+            }
+        }
+
         function finishExam() {
+            const lastAns = document.getElementById('student-answer').value.trim().toUpperCase();
+            if(lastAns) studentAnswers[currentIndex] = lastAns;
+
             showScreen('result-page');
-            document.getElementById('final-score-display').innerText = score + " / " + currentQuestions.length;
+            score = 0;
             const area = document.getElementById('review-area');
             area.innerHTML = "";
-            examResults.forEach(r => {
+            
+            currentQuestions.forEach((q, i) => {
+                const p = q.split('|');
+                const correct = p[1].trim().toUpperCase();
+                const mine = studentAnswers[i];
+                if(mine === correct) score++;
                 area.innerHTML += `<div class="review-item">
-                    <p><b>ጥያቄ:</b> ${r.q}</p>
-                    <p style="color:${r.mine==r.correct?'#2ecc71':'#e74c3c'}">መልስዎ: ${r.mine}</p>
-                    <p style="color:#2ecc71">ትክክል: ${r.correct}</p>
-                    <p style="color:#ffd700"><b>ማብራሪያ:</b> ${r.exp}</p>
+                    <p><b>Q:</b> ${p[0]}</p>
+                    <p style="color:${mine==correct?'#2ecc71':'#e74c3c'}">መልስዎ: ${mine}</p>
+                    <p style="color:#2ecc71">ትክክል: ${correct}</p>
+                    <p style="color:#ffd700"><b>ማብራሪያ:</b> ${p[2] || "የለም"}</p>
                 </div>`;
             });
+            document.getElementById('final-score-display').innerText = score + " / " + currentQuestions.length;
         }
 
         function startTimer() {
@@ -284,11 +280,7 @@
 
         function backToMenu() { showScreen('main-menu'); }
         function backToRole() { showScreen('role-page'); }
-        function backToCategory() { 
-            showScreen('category-page'); 
-            document.getElementById('subject-list').classList.remove('hidden');
-            document.getElementById('admin-upload-area').classList.add('hidden');
-        }
+        function backToCategory() { showScreen('category-page'); document.getElementById('subject-list').classList.remove('hidden'); document.getElementById('admin-upload-area').classList.add('hidden'); }
     </script>
 </body>
 </html>
