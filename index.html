@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mertule Mariyam Exam Prep</title>
+    <link rel="manifest" href="manifest.json">
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         /* 2026 Modern Design (Glassmorphism) */
@@ -36,6 +37,7 @@
         #timer { font-size: 1.5rem; color: #ff4b2b; font-weight: bold; margin-bottom: 15px; }
         .q-text { text-align: left; font-size: 1.1rem; margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; }
         .status-msg { color: #ffd700; font-size: 0.9rem; margin: 5px; }
+        #install-box { background: #ffd700; color: #000; font-weight: bold; margin-bottom: 15px; display: none; }
     </style>
 </head>
 <body>
@@ -47,6 +49,7 @@
     </div>
 
     <div id="main-menu" class="container hidden">
+        <button id="install-box" onclick="installApp()">አፑን ስልክ ላይ ጫን (Install)</button>
         <div style="text-align: right; margin-bottom: 10px;">
             <select id="lang" style="padding: 5px; border-radius: 5px;">
                 <option>አማርኛ</option>
@@ -101,6 +104,28 @@
     </div>
 
     <script>
+        // --- Offline & Install Support ---
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-box').style.display = 'block';
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(() => {
+                    document.getElementById('install-box').style.display = 'none';
+                });
+            }
+        }
+
+        // --- Original App Logic ---
         let isAdmin = false;
         let selectedSubject = "";
         let currentQuestions = [];
@@ -153,7 +178,6 @@
             }
         }
 
-        // አዲሱ የካሜራ OCR ተግባር
         function handleOCR(input) {
             const file = input.files[0];
             if (!file) return;
@@ -197,7 +221,6 @@
 
         function nextQuestion() {
             if(!document.getElementById('student-answer').value) return alert("መልስ ሳይሰጡ ማለፍ አይቻልም!");
-            // ውጤት ለመቁጠር (ለጊዜው ሁሉም መልስ ልክ እንደሆነ ተደርጓል፣ በኋላ ማስተካከል ይቻላል)
             score++; 
             if(currentIndex < currentQuestions.length - 1) {
                 currentIndex++;
