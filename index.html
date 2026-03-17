@@ -115,7 +115,7 @@
         let timerInterval;
         let isAdminMode = false;
 
-        // Splash screen 4 seconds
+        // መጀመሪያ Splash Screen ለ 4 ሰከንድ ይታያል
         setTimeout(() => showScreen('main-menu'), 4000);
 
         function showScreen(id) {
@@ -142,8 +142,9 @@
             showScreen('subject-page');
             const list = document.getElementById('subject-list');
             list.innerHTML = "";
+            document.getElementById('subject-header').innerText = stream + " ዘርፍ ትምህርቶች";
             
-            // Common Subjects
+            // Common Subjects (ለአድሚንም ለተማሪም በተመሳሳይ ቅደም ተከተል)
             let subjects = ["English", "Maths"];
             if(stream === "Natural") {
                 subjects.push("Physics", "Chemistry", "Biology");
@@ -156,7 +157,7 @@
                 btn.innerText = sub;
                 btn.onclick = () => {
                     if(isAdminMode) {
-                        alert(sub + " ጥያቄ መጫኛ ክፍል (በቅርቡ ይጠናቀቃል)");
+                        alert(sub + " ጥያቄዎችን ለማስተዳደር (በቅርቡ ይጠናቀቃል)");
                     } else {
                         startExam(sub);
                     }
@@ -166,17 +167,17 @@
         }
 
         function startExam(subject) {
-            // Sample Data - እዚህ ጋር በ QR የመጣውን ዳታ ማገናኘት ትችላለህ
+            // በምሳሌነት የቀረቡ ጥያቄዎች (እዚህ ጋር ጥያቄዎችን መጨመር ትችላለህ)
             currentQuestions = [
-                { q: subject + " - Question 1: What is the answer?", a: "Option 1", b: "Option 2", c: "Option 3", d: "Option 4", correct: "A" },
-                { q: subject + " - Question 2: Solve this problem.", a: "Ans 1", b: "Ans 2", c: "Ans 3", d: "Ans 4", correct: "B" }
+                { q: subject + " ጥያቄ 1: የዚህ ትምህርት ዋና ዓላማ ምንድነው?", a: "መረዳት", b: "መሸምደድ", c: "ማለፍ", d: "ማወቅ", correct: "A" },
+                { q: subject + " ጥያቄ 2: ፈተናውን ለመጨረስ ምን ያህል ጊዜ ይፈጃል?", a: "30 ደቂቃ", b: "1 ሰዓት", c: "2 ሰዓት", d: "10 ደቂቃ", correct: "B" }
             ];
             currentIndex = 0;
             score = 0;
-            timeLeft = 3600;
+            timeLeft = 3600; // ለፈተናው 1 ሰዓት ይሰጣል
             showScreen('exam-page');
             loadQuestion();
-            startTimer();
+            startTimer(); 
         }
 
         function startTimer() {
@@ -187,7 +188,11 @@
                 let secs = timeLeft % 60;
                 document.getElementById('timer').innerText = 
                     (mins < 10 ? "0" : "") + mins + ":" + (secs < 10 ? "0" : "") + secs;
-                if (timeLeft <= 0) { clearInterval(timerInterval); finishExam(); }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    finishExam(); // ሰዓቱ ሲያልቅ በራሱ ይዘጋል
+                }
             }, 1000);
         }
 
@@ -195,10 +200,12 @@
             let q = currentQuestions[currentIndex];
             document.getElementById('q-info-box').innerText = "Question " + (currentIndex + 1) + " of " + currentQuestions.length;
             document.getElementById('current-question-box').innerText = q.q;
+            
             document.getElementById('optA').innerText = "A) " + q.a;
             document.getElementById('optB').innerText = "B) " + q.b;
             document.getElementById('optC').innerText = "C) " + q.c;
             document.getElementById('optD').innerText = "D) " + q.d;
+
             resetOptions();
             selectedAnswer = null;
 
@@ -242,7 +249,7 @@
             }
         }
 
-        function showScanPage() { alert("Scan system በቅርቡ ይከፈታል!"); }
+        function showScanPage() { alert("QR Scanning system በቅርቡ ይከፈታል!"); }
     </script>
 </body>
 </html>
