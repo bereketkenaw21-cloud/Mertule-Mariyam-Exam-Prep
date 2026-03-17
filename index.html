@@ -4,187 +4,181 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mertule Mariyam Exam Prep</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
+        /* 2026 Modern Design (Glassmorphism) */
         body {
             margin: 0; font-family: 'Segoe UI', Arial, sans-serif;
             background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
             color: white; height: 100vh; display: flex; justify-content: center; align-items: center; text-align: center;
         }
         .container {
-            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(25px);
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px);
             border-radius: 30px; padding: 25px; border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5); width: 88%; max-width: 500px;
-            max-height: 92vh; overflow-y: auto;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); width: 85%; max-width: 500px;
+            max-height: 90vh; overflow-y: auto;
         }
         .hidden { display: none !important; }
+        h1 { font-size: 1.4rem; color: #00d2ff; }
+        .creator { font-weight: bold; color: #ffd700; font-size: 1rem; margin-top: 10px; }
+        .cap-icon { font-size: 60px; }
         
-        .q-card {
-            background: rgba(0, 0, 0, 0.3); border-radius: 20px;
-            padding: 20px; font-size: 1.3rem; text-align: left;
-            margin-bottom: 25px; border-left: 5px solid #00d2ff;
-        }
-
-        /* የመምረጫ ሳጥኖች - መጻፊያ የለውም */
-        .options-list { display: flex; flex-direction: column; gap: 15px; width: 100%; }
-        .option-item {
-            display: flex; align-items: center; cursor: pointer;
-            padding: 15px; border-radius: 15px; background: rgba(255, 255, 255, 0.05);
-            transition: 0.3s; border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        /* ሲመረጥ የሚሆን ቀለም */
-        .option-item.selected {
-            background: rgba(0, 210, 255, 0.2);
-            border: 1px solid #00d2ff;
-        }
-
-        .circle-label {
-            width: 40px; height: 40px; border-radius: 50%;
-            border: 2px solid #00d2ff; display: flex;
-            justify-content: center; align-items: center;
-            font-weight: bold; margin-right: 15px; flex-shrink: 0;
-        }
-        
-        .option-item.selected .circle-label {
-            background: #00d2ff; color: #000;
-        }
-
-        .option-text { font-size: 1.1rem; text-align: left; }
-
         button {
             background: linear-gradient(to right, #00d2ff, #3a7bd5); color: white;
-            border: none; padding: 14px; border-radius: 50px; font-size: 1.1rem;
-            cursor: pointer; width: 80%; margin-top: 20px;
+            border: none; padding: 12px 20px; border-radius: 50px; font-size: 1rem;
+            cursor: pointer; margin: 8px; transition: 0.3s; width: 85%;
         }
-        .nav-btns { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; }
-        .nav-btns button { width: 45%; margin-top: 0; }
+        button:hover { transform: scale(1.02); box-shadow: 0 0 15px #00d2ff; }
         
-        textarea {
-            width: 90%; padding: 15px; border-radius: 15px; border: none;
-            background: rgba(255, 255, 255, 0.2); color: white; margin-bottom: 10px;
+        /* ምርጫዎች (Options) ዲዛይን */
+        .options-container { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .option-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px; padding: 12px; margin: 5px 0;
+            width: 90%; text-align: left; font-size: 1rem; color: white;
+            transition: 0.3s; cursor: pointer;
         }
+        .option-btn.selected {
+            background: #00d2ff; color: #000; font-weight: bold; border-color: #fff;
+        }
+
+        input, textarea {
+            width: 85%; padding: 12px; margin: 10px; border-radius: 10px; border: none;
+            background: rgba(255, 255, 255, 0.2); color: white;
+        }
+        #timer { font-size: 1.5rem; color: #ff4b2b; font-weight: bold; margin-bottom: 10px; }
+        .q-info { font-size: 0.9rem; color: #ffd700; margin-bottom: 5px; }
+        .q-text { text-align: left; font-size: 1.1rem; margin-bottom: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 15px; min-height: 50px; }
     </style>
 </head>
 <body>
 
     <div id="splash" class="container">
-        <h1 style="color: #00d2ff;">🎓 መርጡለ ማሪያም</h1>
-        <p>የተማሪዎች ፈተና መለማመጃ</p>
-        <button onclick="showScreen('main-menu')">ጀምር</button>
+        <div class="cap-icon">🎓</div>
+        <h1>መርጡለ ማሪያም 2ኛ ደረጃ ትምህርት ቤት የፈተና መለማመጃ</h1>
+        <p class="creator">አዘጋጅ፦ በረከት ቀናው</p>
     </div>
 
     <div id="main-menu" class="container hidden">
-        <h1>ዋና ማውጫ</h1>
-        <button onclick="showSubjects()">ተማሪ (Student)</button>
-        <button onclick="showAdminLogin()" style="background: #9b59b6;">አድሚን (Admin)</button>
+        <h1>ምርጫዎን ያሳውቁ</h1>
+        <button onclick="showScreen('role-page')">Start / ጀምር</button>
+        <button onclick="showScanPage()" style="background: #9b59b6;">ጥያቄ በ QR Scan ተቀበል</button>
     </div>
 
-    <div id="admin-area" class="container hidden">
-        <h3>ጥያቄዎችን ያስገቡ</h3>
-        <p style="font-size: 0.7rem; color: #ffd700;">ጥያቄ | A | B | C | D | መልስ</p>
-        <textarea id="q-input" rows="8" placeholder="ለምሳሌ፡ 2+2? | 3 | 4 | 5 | 6 | 4"></textarea>
-        <button onclick="saveQuestions()" style="background: #27ae60;">አስቀምጥ</button>
-        <button onclick="showScreen('main-menu')" style="background: grey;">ተመለስ</button>
-    </div>
-
-    <div id="subject-page" class="container hidden">
-        <h2>ትምህርት ይምረጡ</h2>
-        <button onclick="startExam('Maths')">Mathematics</button>
-        <button onclick="startExam('Physics')">Physics</button>
-        <button onclick="showScreen('main-menu')" style="background: grey;">ተመለስ</button>
+    <div id="role-page" class="container hidden">
+        <h1>ማን ነዎት?</h1>
+        <button onclick="studentFlow()">ተማሪ (Student)</button>
+        <button onclick="adminFlow()">አድሚን (Admin)</button>
+        <button style="background: grey;" onclick="showScreen('main-menu')">ወደ ኋላ</button>
     </div>
 
     <div id="exam-page" class="container hidden">
-        <div id="q-text" class="q-card"></div>
-        <div id="options-box" class="options-list"></div>
+        <div id="timer">60:00</div>
+        <div id="q-info-box" class="q-info"></div>
+        <div id="current-question-box" class="q-text"></div>
         
-        <div class="nav-btns">
-            <button onclick="goBack()" style="background: #e67e22;">Back</button>
-            <button onclick="goNext()">Next</button>
+        <div id="options-area" class="options-container">
+            <div class="option-btn" id="optA" onclick="selectOption('A')">A) </div>
+            <div class="option-btn" id="optB" onclick="selectOption('B')">B) </div>
+            <div class="option-btn" id="optC" onclick="selectOption('C')">C) </div>
+            <div class="option-btn" id="optD" onclick="selectOption('D')">D) </div>
         </div>
+
+        <div style="display: flex; justify-content: space-around; margin-top: 15px;">
+            <button id="prev-btn" onclick="goBack()" style="width: 45%; background: #e67e22;">Back</button>
+            <button id="next-btn" onclick="nextQuestion()" style="width: 45%;">Next</button>
+        </div>
+        <button id="submit-btn" onclick="finishExam()" class="hidden" style="background: #27ae60; margin-top: 15px;">ጨርስ (Submit)</button>
     </div>
 
     <div id="result-page" class="container hidden">
-        <h1>ውጤት</h1>
-        <h2 id="final-score" style="font-size: 3.5rem; color: #00d2ff;"></h2>
+        <h1>ውጤትዎ</h1>
+        <h2 id="final-score-display"></h2>
         <button onclick="location.reload()">እንደገና ጀምር</button>
     </div>
 
     <script>
-        let isAdmin=false, currentQs=[], currentIndex=0, studentAns=[];
+        let currentQuestions = [], currentIndex = 0, selectedAnswer = null, score = 0;
+
+        // Splash screen timer
+        setTimeout(() => showScreen('main-menu'), 3000);
 
         function showScreen(id) {
             document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
         }
 
-        function showAdminLogin() {
-            let p = prompt("Password ያስገቡ:");
-            if(p === "Mertule Mariyam@2026") { isAdmin=true; showScreen('admin-area'); }
+        function studentFlow() {
+            // ለሙከራ ያህል ጥያቄ እዚህ ጋር እንሙላ (በኋላ ከ ዳታቤዝህ/QR ጋር ታገናኘዋለህ)
+            currentQuestions = [
+                { q: "What is the value of 2x + 5 = 15?", a: "5", b: "10", c: "7.5", d: "20", correct: "A" },
+                { q: "Capital city of Ethiopia?", a: "Gonder", b: "Addis Ababa", c: "Hawassa", d: "Mekelle", correct: "B" }
+            ];
+            currentIndex = 0;
+            score = 0;
+            showScreen('exam-page');
+            loadQuestion();
         }
 
-        function showSubjects() { showScreen('subject-page'); }
-
-        function saveQuestions() {
-            localStorage.setItem('saved_exams', document.getElementById('q-input').value);
-            alert("ጥያቄዎቹ ተቀምጠዋል!");
-        }
-
-        function startExam() {
-            const data = localStorage.getItem('saved_exams');
-            if(!data) return alert("ጥያቄ አልተጫነም!");
-            currentQs = data.split('\n').filter(l => l.includes('|'));
-            currentIndex = 0; studentAns = new Array(currentQs.length).fill(null);
-            showScreen('exam-page'); updateQ();
-        }
-
-        function updateQ() {
-            const parts = currentQs[currentIndex].split('|');
-            document.getElementById('q-text').innerText = (currentIndex + 1) + ". " + parts[0].trim();
+        function loadQuestion() {
+            let q = currentQuestions[currentIndex];
+            document.getElementById('q-info-box').innerText = "Question " + (currentIndex + 1) + " of " + currentQuestions.length;
+            document.getElementById('current-question-box').innerText = q.q;
             
-            const box = document.getElementById('options-box');
-            box.innerHTML = "";
-            const labels = ['A', 'B', 'C', 'D'];
+            // ምርጫዎቹን መሙላት
+            document.getElementById('optA').innerText = "A) " + q.a;
+            document.getElementById('optB').innerText = "B) " + q.b;
+            document.getElementById('optC').innerText = "C) " + q.c;
+            document.getElementById('optD').innerText = "D) " + q.d;
 
-            for(let i=1; i<=4; i++) {
-                const choiceValue = parts[i] ? parts[i].trim() : "";
-                if(!choiceValue) continue;
+            // ቀለሙን ወደ ነበረበት መመለስ
+            resetOptions();
+            selectedAnswer = null;
 
-                const item = document.createElement('div');
-                item.className = 'option-item';
-                // ተማሪው ቀድሞ የመረጠው ከሆነ ምልክት ያደርጋል
-                if(studentAns[currentIndex] === choiceValue) item.classList.add('selected');
-
-                item.innerHTML = `
-                    <div class="circle-label">${labels[i-1]}</div>
-                    <div class="option-text">${choiceValue}</div>
-                `;
-                
-                // እዚህ ጋር ነው ክሊክ ሲያደርግ ብቻ የሚመርጠው
-                item.onclick = () => {
-                    studentAns[currentIndex] = choiceValue;
-                    updateQ(); // ቀለሙን እንዲቀይር ድጋሚ ያድሳል
-                };
-                box.appendChild(item);
+            // Next/Submit button switch
+            if(currentIndex === currentQuestions.length - 1) {
+                document.getElementById('next-btn').classList.add('hidden');
+                document.getElementById('submit-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('next-btn').classList.remove('hidden');
+                document.getElementById('submit-btn').classList.add('hidden');
             }
         }
 
-        function goNext() {
-            if(studentAns[currentIndex] === null) return alert("እባክዎ አንድ ምርጫ ይንኩ!");
-            if(currentIndex < currentQs.length - 1) { currentIndex++; updateQ(); }
-            else finish();
+        function selectOption(choice) {
+            resetOptions();
+            selectedAnswer = choice;
+            document.getElementById('opt' + choice).classList.add('selected');
         }
 
-        function goBack() { if(currentIndex > 0) { currentIndex--; updateQ(); } }
+        function resetOptions() {
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+        }
 
-        function finish() {
+        function nextQuestion() {
+            if(!selectedAnswer) return alert("እባክዎ መልስ ይምረጡ!");
+            if(selectedAnswer === currentQuestions[currentIndex].correct) score++;
+            
+            currentIndex++;
+            loadQuestion();
+        }
+
+        function finishExam() {
+            if(!selectedAnswer) return alert("እባክዎ መልስ ይምረጡ!");
+            if(selectedAnswer === currentQuestions[currentIndex].correct) score++;
+            
             showScreen('result-page');
-            let score = 0;
-            currentQs.forEach((q, i) => {
-                const correct = q.split('|')[5].trim();
-                if(studentAns[i] === correct) score++;
-            });
-            document.getElementById('final-score').innerText = score + " / " + currentQs.length;
+            document.getElementById('final-score-display').innerText = score + " / " + currentQuestions.length;
+        }
+
+        function goBack() {
+            if(currentIndex > 0) {
+                currentIndex--;
+                loadQuestion();
+            }
         }
     </script>
 </body>
