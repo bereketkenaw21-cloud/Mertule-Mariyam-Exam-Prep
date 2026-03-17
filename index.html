@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mertule Mariyam Exam Prep</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         /* 2026 Modern Design (Glassmorphism) */
         body {
@@ -34,6 +35,7 @@
         }
         #timer { font-size: 1.5rem; color: #ff4b2b; font-weight: bold; margin-bottom: 15px; }
         .q-text { text-align: left; font-size: 1.1rem; margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; }
+        .status-msg { color: #ffd700; font-size: 0.9rem; margin: 5px; }
     </style>
 </head>
 <body>
@@ -81,8 +83,11 @@
         <div id="subject-list"></div>
         <div id="admin-upload-area" class="hidden">
             <textarea id="question-input" rows="5" placeholder="ጥያቄዎችን እዚህ ፔስት ያድርጉ..."></textarea>
+            <div id="ocr-status" class="status-msg"></div>
             <button onclick="saveQuestions()" style="background: #28a745;">ጥያቄዎቹን ጫን</button>
-            <button onclick="alert('ካሜራው እየተዘጋጀ ነው...')" style="background: #e67e22;">📷 በካሜራ አንሳ</button>
+            
+            <input type="file" id="camera-file" accept="image/*" capture="environment" class="hidden" onchange="handleOCR(this)">
+            <button onclick="document.getElementById('camera-file').click()" style="background: #e67e22;">📷 በካሜራ አንሳ</button>
         </div>
         <button style="background: grey; width: 40%;" onclick="backToCategory()">ወደ ኋላ</button>
     </div>
@@ -96,12 +101,12 @@
     </div>
 
     <script>
-        // Global variables
         let isAdmin = false;
         let selectedSubject = "";
         let currentQuestions = [];
         let currentIndex = 0;
         let timerSeconds = 3600;
+        let score = 0;
 
         const screens = ['splash', 'main-menu', 'role-page', 'admin-login', 'category-page', 'subject-page', 'exam-page'];
 
@@ -110,7 +115,6 @@
             document.getElementById(id).classList.remove('hidden');
         }
 
-        // 1. Splash Screen Timer
         setTimeout(() => showScreen('main-menu'), 5000);
 
         function showRoleSelection() { showScreen('role-page'); }
@@ -149,7 +153,20 @@
             }
         }
 
-        // Admin Save Logic
+        // አዲሱ የካሜራ OCR ተግባር
+        function handleOCR(input) {
+            const file = input.files[0];
+            if (!file) return;
+            document.getElementById('ocr-status').innerText = "ፎቶው ወደ ጽሑፍ እየተቀየረ ነው... እባክዎ ይጠብቁ";
+            
+            Tesseract.recognize(file, 'eng', { logger: m => console.log(m) }).then(({ data: { text } }) => {
+                document.getElementById('question-input').value = text;
+                document.getElementById('ocr-status').innerText = "በስኬት ተቀይሯል!";
+            }).catch(err => {
+                document.getElementById('ocr-status').innerText = "ስህተት ተፈጥሯል፣ እባክዎ እንደገና ይሞክሩ።";
+            });
+        }
+
         function saveQuestions() {
             const input = document.getElementById('question-input').value;
             if(!input) return alert("እባክዎ ጥያቄ ያስገቡ!");
@@ -158,13 +175,13 @@
             backToCategory();
         }
 
-        // Student Exam Logic
         function startExam(s) {
             const data = localStorage.getItem('exam_' + s);
             if(!data) return alert("ለዚህ ትምህርት ጥያቄ ገና አልተጫነም!");
             
             currentQuestions = data.split('\n').filter(q => q.trim() !== "");
             currentIndex = 0;
+            score = 0;
             showScreen('exam-page');
             updateQuestion();
             startTimer();
@@ -180,6 +197,8 @@
 
         function nextQuestion() {
             if(!document.getElementById('student-answer').value) return alert("መልስ ሳይሰጡ ማለፍ አይቻልም!");
+            // ውጤት ለመቁጠር (ለጊዜው ሁሉም መልስ ልክ እንደሆነ ተደርጓል፣ በኋላ ማስተካከል ይቻላል)
+            score++; 
             if(currentIndex < currentQuestions.length - 1) {
                 currentIndex++;
                 updateQuestion();
@@ -194,18 +213,16 @@
                 document.getElementById('timer').innerText = `${min}:${sec < 10 ? '0'+sec : sec}`;
                 if(timerSeconds <= 0) {
                     clearInterval(t);
-                    alert("ጊዜዎ አልቋል!");
                     finishExam();
                 }
             }, 1000);
         }
 
         function finishExam() {
-            alert("ፈተናውን ጨርሰዋል። ውጤትዎ በቅርቡ ይታወቃል!");
+            alert("ፈተናውን ጨርሰዋል። ውጤትዎ: " + currentIndex + "/" + currentQuestions.length);
             location.reload();
         }
 
-        // Navigation
         function backToMenu() { showScreen('main-menu'); }
         function backToRole() { showScreen('role-page'); }
         function backToCategory() { 
