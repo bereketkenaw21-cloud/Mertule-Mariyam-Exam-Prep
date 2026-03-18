@@ -15,98 +15,21 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     
     <style>
-        body { 
-            margin: 0; 
-            font-family: 'Segoe UI', Arial, sans-serif; 
-            background: linear-gradient(45deg, #0f0c29, #302b63, #24243e); 
-            color: white; 
-            height: 100vh; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            text-align: center; 
-        }
-        .container { 
-            background: rgba(255, 255, 255, 0.1); 
-            backdrop-filter: blur(20px); 
-            border-radius: 30px; 
-            padding: 25px; 
-            border: 1px solid rgba(255, 255, 255, 0.2); 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
-            width: 85%; 
-            max-width: 500px; 
-            max-height: 90vh; 
-            overflow-y: auto; 
-        }
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(45deg, #0f0c29, #302b63, #24243e); color: white; height: 100vh; display: flex; justify-content: center; align-items: center; text-align: center; overflow: hidden; }
+        .container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border-radius: 30px; padding: 25px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.5); width: 85%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
         .hidden { display: none !important; }
-        h1 { font-size: 1.4rem; color: #00d2ff; line-height: 1.5; }
+        h1 { font-size: 1.4rem; color: #00d2ff; }
         .creator { font-weight: bold; color: #ffd700; font-size: 1.1rem; margin-top: 15px; }
         .cap-icon { font-size: 70px; margin-bottom: 10px; }
-        
-        button { 
-            background: linear-gradient(to right, #00d2ff, #3a7bd5); 
-            color: white; 
-            border: none; 
-            padding: 12px 20px; 
-            border-radius: 50px; 
-            font-size: 1rem; 
-            cursor: pointer; 
-            margin: 8px; 
-            transition: 0.3s; 
-            width: 85%; 
-        }
-        button:hover { 
-            transform: scale(1.02); 
-            box-shadow: 0 0 15px #00d2ff; 
-        }
-        .option-btn { 
-            background: rgba(255, 255, 255, 0.05); 
-            border: 1px solid rgba(255, 255, 255, 0.3); 
-            border-radius: 15px; 
-            padding: 12px; 
-            margin: 6px 0; 
-            width: 90%; 
-            text-align: left; 
-            font-size: 1rem; 
-            color: white; 
-            transition: 0.3s; 
-            cursor: pointer; 
-        }
-        .option-btn.selected { 
-            background: #00d2ff !important; 
-            color: #000; 
-            font-weight: bold; 
-            border-color: #fff; 
-        }
+        button { background: linear-gradient(to right, #00d2ff, #3a7bd5); color: white; border: none; padding: 12px 20px; border-radius: 50px; font-size: 1rem; cursor: pointer; margin: 8px; transition: 0.3s; width: 85%; }
+        button:hover { transform: scale(1.02); box-shadow: 0 0 15px #00d2ff; }
+        .option-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 15px; padding: 12px; margin: 6px 0; width: 90%; text-align: left; font-size: 1rem; color: white; cursor: pointer; }
+        .option-btn.selected { background: #00d2ff !important; color: #000; font-weight: bold; }
         #timer { font-size: 2rem; color: #ff4b2b; font-weight: bold; margin-bottom: 10px; }
-        .q-text { 
-            text-align: left; 
-            font-size: 1.1rem; 
-            margin-bottom: 15px; 
-            padding: 15px; 
-            background: rgba(0,0,0,0.3); 
-            border-radius: 15px; 
-        }
-        input, select, textarea { 
-            width: 90%; 
-            padding: 10px; 
-            margin: 5px 0; 
-            border-radius: 10px; 
-            border: none; 
-            background: rgba(255,255,255,0.2); 
-            color: white; 
-        }
-        #install-btn { 
-            position: fixed; 
-            top: 10px; 
-            left: 10px; 
-            background: #27ae60; 
-            padding: 5px 15px; 
-            border-radius: 10px; 
-            font-size: 0.8rem; 
-            z-index: 9999; 
-            display: none; 
-        }
+        .q-text { text-align: left; font-size: 1.1rem; margin-bottom: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 15px; }
+        input, select, textarea { width: 90%; padding: 10px; margin: 5px 0; border-radius: 10px; border: none; background: rgba(255,255,255,0.2); color: white; }
+        #install-btn { position: fixed; top: 10px; left: 10px; background: #27ae60; padding: 5px 15px; border-radius: 10px; font-size: 0.8rem; z-index: 9999; display: none; width: auto; }
+        #qrcode-output { background: white; padding: 10px; display: inline-block; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -127,7 +50,7 @@
 
     <div id="qr-scan-page" class="container hidden">
         <h1>QR ስካን እያደረገ ነው...</h1>
-        <div id="qr-reader"></div>
+        <div id="qr-reader" style="width: 100%; border-radius: 15px;"></div>
         <button onclick="stopQRScanner()" style="background: grey;">ተመለስ</button>
     </div>
 
@@ -156,25 +79,20 @@
         <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;" onchange="processImage(this)">
         <button onclick="document.getElementById('camera-input').click()" style="background: #e67e22;">ፎቶ አንሳ (OCR)</button>
         <textarea id="smart-paste-input" placeholder="ጽሑፉን እዚህ ይለጥፉ..."></textarea>
-        <button onclick="autoExtractData()" style="background: #3498db;">ዳታውን ለይ</button>
+        <button onclick="autoExtractData()" style="background: #3498db; width: 60%;">ዳታውን ለይ</button>
         <hr>
         <textarea id="admin-q-text" placeholder="ጥያቄው..."></textarea>
-        <input type="text" id="admin-optA" placeholder="A"> 
-        <input type="text" id="admin-optB" placeholder="B">
-        <input type="text" id="admin-optC" placeholder="C"> 
-        <input type="text" id="admin-optD" placeholder="D">
+        <input type="text" id="admin-optA" placeholder="ምርጫ A">
+        <input type="text" id="admin-optB" placeholder="ምርጫ B">
+        <input type="text" id="admin-optC" placeholder="ምርጫ C">
+        <input type="text" id="admin-optD" placeholder="ምርጫ D">
         <select id="admin-correct">
             <option value="">ትክክለኛ መልስ</option>
-            <option value="A">A</option>
-            <option value="B">B</option>
-            <option value="C">C</option>
-            <option value="D">D</option>
+            <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
         </select>
         <button onclick="saveAdminQuestion()" style="background: #27ae60;">መዝግብ</button>
         <button onclick="generateSubjectQR()" style="background: #8e44ad;">QR አውጣ</button>
-        <div id="qrcode-container" class="hidden">
-            <div id="qrcode-output"></div>
-        </div>
+        <div id="qrcode-container" class="hidden"><div id="qrcode-output"></div></div>
         <button onclick="showScreen('subject-page')" style="background: grey;">ተመለስ</button>
     </div>
 
@@ -187,187 +105,103 @@
             <div class="option-btn" id="optC" onclick="selectOption('C')"></div>
             <div class="option-btn" id="optD" onclick="selectOption('D')"></div>
         </div>
-        <button onclick="nextQuestion()">Next / ቀጣይ</button>
+        <div style="display: flex; gap: 5px;">
+             <button onclick="prevQuestion()" style="background: #e67e22;">Back</button>
+             <button onclick="nextQuestion()">Next</button>
+        </div>
     </div>
 
     <div id="result-page" class="container hidden">
-        <h1>ውጤት</h1>
-        <h2 id="final-score-display"></h2>
+        <h1>ውጤትዎ</h1>
+        <h2 id="final-score-display" style="font-size: 3rem; color: #ffd700;"></h2>
         <button onclick="location.reload()">ተመለስ</button>
     </div>
 
     <script>
-        // --- 1. PWA & OFFLINE LOGIC ---
+        // --- 1. PWA INSTALL LOGIC ---
         let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('install-btn').style.display = 'block';
-        });
-
-        async function installApp() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') document.getElementById('install-btn').style.display = 'none';
-                deferredPrompt = null;
-            }
-        }
-
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('install-btn').style.display = 'block'; });
+        async function installApp() { if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') document.getElementById('install-btn').style.display = 'none'; deferredPrompt = null; } }
+        
+        // Service Worker (Offline ስራ)
         if ('serviceWorker' in navigator) {
-            const swCode = `
-                self.addEventListener('install', e => e.waitUntil(caches.open('v1').then(c => c.addAll(['./']))));
-                self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
-            `;
+            const swCode = `self.addEventListener('install', e => e.waitUntil(caches.open('v1').then(c => c.addAll(['./'])))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));`;
             const blob = new Blob([swCode], { type: 'text/javascript' });
             navigator.serviceWorker.register(URL.createObjectURL(blob));
         }
 
-        // --- 2. GLOBAL VARIABLES ---
+        // --- 2. CORE SYSTEM ---
         let questionsDB = JSON.parse(localStorage.getItem('mertuleDB')) || {"English":[],"Maths":[],"Physics":[],"Chemistry":[],"Biology":[],"Geography":[],"History":[],"Economics":[]};
-        let currentQs = [], qIdx = 0, score = 0, html5QrCode, activeSub = "";
-        let isAdmin = false, selectedAnswer = null, timerInterval;
+        let currentQs = [], qIdx = 0, score = 0, activeSub = "", isAdmin = false, selectedAnswer = null, timerInterval, html5QrCode;
 
-        // Splash Screen Delay
         setTimeout(() => showScreen('main-menu'), 3500);
 
-        function showScreen(id) {
-            document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
+        function showScreen(id) { document.querySelectorAll('.container').forEach(c => c.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+
+        function adminLoginFlow() { if(prompt("Password:") === "Mertule Mariyam@2026") { isAdmin = true; showScreen('stream-page'); } else { alert("ስህተት!"); } }
+        function studentFlow() { isAdmin = false; showScreen('stream-page'); }
+
+        function selectStream(stream) {
+            showScreen('subject-page');
+            const list = document.getElementById('subject-list'); list.innerHTML = "";
+            let subs = stream === 'Natural' ? ["English","Maths","Physics","Chemistry","Biology"] : ["English","Maths","Geography","History","Economics"];
+            subs.forEach(s => {
+                let b = document.createElement('button'); b.innerText = s;
+                b.onclick = () => { activeSub = s; if(isAdmin) showScreen('admin-upload-page'); else startExam(s); };
+                list.appendChild(b);
+            });
         }
 
-        // OCR Function
+        // --- 3. EXAM LOGIC ---
+        function startExam(s) {
+            currentQs = questionsDB[s];
+            if(!currentQs || currentQs.length === 0) return alert("ጥያቄ አልተጫነም!");
+            qIdx = 0; score = 0; showScreen('exam-page'); startTimer(3600); loadQuestion();
+        }
+
+        function loadQuestion() {
+            selectedAnswer = null; let q = currentQs[qIdx];
+            document.getElementById('current-question-box').innerText = (qIdx + 1) + ". " + q.q;
+            document.getElementById('optA').innerText = "A) " + q.a; document.getElementById('optB').innerText = "B) " + q.b;
+            document.getElementById('optC').innerText = "C) " + q.c; document.getElementById('optD').innerText = "D) " + q.d;
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+        }
+
+        function selectOption(ans) { selectedAnswer = ans; document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected')); document.getElementById('opt' + ans).classList.add('selected'); }
+
+        function nextQuestion() {
+            if(!selectedAnswer) return alert("እባክዎ መልስ ይምረጡ!");
+            if(selectedAnswer === currentQs[qIdx].correct) score++;
+            qIdx++;
+            if(qIdx < currentQs.length) loadQuestion(); else finishExam();
+        }
+
+        function prevQuestion() { if(qIdx > 0) { qIdx--; loadQuestion(); } }
+
+        function startTimer(duration) {
+            let timer = duration;
+            timerInterval = setInterval(() => {
+                let min = parseInt(timer / 60, 10); let sec = parseInt(timer % 60, 10);
+                document.getElementById('timer').textContent = (min < 10 ? "0"+min : min) + ":" + (sec < 10 ? "0"+sec : sec);
+                if (--timer < 0) finishExam();
+            }, 1000);
+        }
+
+        function finishExam() { clearInterval(timerInterval); showScreen('result-page'); document.getElementById('final-score-display').innerText = score + " / " + currentQs.length; }
+
+        // --- 4. ADMIN & SCANNER LOGIC ---
+        function saveAdminQuestion() {
+            let q = { q: document.getElementById('admin-q-text').value, a: document.getElementById('admin-optA').value, b: document.getElementById('admin-optB').value, c: document.getElementById('admin-optC').value, d: document.getElementById('admin-optD').value, correct: document.getElementById('admin-correct').value };
+            questionsDB[activeSub].push(q); localStorage.setItem('mertuleDB', JSON.stringify(questionsDB));
+            alert("ተመዝግቧል!"); document.getElementById('admin-q-text').value = "";
+        }
+
         async function processImage(input) {
             if (input.files && input.files[0]) {
                 document.getElementById('smart-paste-input').value = "በማንበብ ላይ...";
                 const result = await Tesseract.recognize(input.files[0], 'eng');
                 document.getElementById('smart-paste-input').value = result.data.text;
             }
-        }
-
-        function adminLoginFlow() {
-            if(prompt("Password:") === "Mertule Mariyam@2026") {
-                isAdmin = true;
-                showScreen('stream-page');
-            } else {
-                alert("የተሳሳተ የይለፍ ቃል!");
-            }
-        }
-
-        function studentFlow() {
-            isAdmin = false;
-            showScreen('stream-page');
-        }
-
-        function selectStream(stream) {
-            showScreen('subject-page');
-            const list = document.getElementById('subject-list');
-            list.innerHTML = "";
-            let subs = stream === 'Natural' ? ["English","Maths","Physics","Chemistry","Biology"] : ["English","Maths","Geography","History","Economics"];
-            subs.forEach(s => {
-                let b = document.createElement('button');
-                b.innerText = s;
-                b.onclick = () => {
-                    activeSub = s;
-                    if(isAdmin) showScreen('admin-upload-page');
-                    else startExam(s);
-                };
-                list.appendChild(b);
-            });
-        }
-
-        function saveAdminQuestion() {
-            let qData = {
-                q: document.getElementById('admin-q-text').value,
-                a: document.getElementById('admin-optA').value,
-                b: document.getElementById('admin-optB').value,
-                c: document.getElementById('admin-optC').value,
-                d: document.getElementById('admin-optD').value,
-                correct: document.getElementById('admin-correct').value
-            };
-            questionsDB[activeSub].push(qData);
-            localStorage.setItem('mertuleDB', JSON.stringify(questionsDB));
-            alert("ጥያቄው በሚገባ ተመዝግቧል!");
-            // Reset fields
-            document.getElementById('admin-q-text').value = "";
-        }
-
-        function startExam(s) {
-            currentQs = questionsDB[s];
-            if(!currentQs || currentQs.length === 0) return alert("ጥያቄ አልተጫነም!");
-            qIdx = 0; score = 0;
-            showScreen('exam-page');
-            startTimer(3600);
-            loadQuestion();
-        }
-
-        function loadQuestion() {
-            selectedAnswer = null;
-            let q = currentQs[qIdx];
-            document.getElementById('current-question-box').innerText = (qIdx + 1) + ". " + q.q;
-            document.getElementById('optA').innerText = "A) " + q.a;
-            document.getElementById('optB').innerText = "B) " + q.b;
-            document.getElementById('optC').innerText = "C) " + q.c;
-            document.getElementById('optD').innerText = "D) " + q.d;
-            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
-        }
-
-        function selectOption(ans) {
-            selectedAnswer = ans;
-            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
-            document.getElementById('opt' + ans).classList.add('selected');
-        }
-
-        function nextQuestion() {
-            if(!selectedAnswer) return alert("እባክዎ መልስ ይምረጡ!");
-            if(selectedAnswer === currentQs[qIdx].correct) score++;
-            qIdx++;
-            if(qIdx < currentQs.length) loadQuestion();
-            else finishExam();
-        }
-
-        function startTimer(duration) {
-            let timer = duration, minutes, seconds;
-            timerInterval = setInterval(() => {
-                minutes = parseInt(timer / 60, 10);
-                seconds = parseInt(timer % 60, 10);
-                document.getElementById('timer').textContent = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
-                if (--timer < 0) finishExam();
-            }, 1000);
-        }
-
-        function finishExam() {
-            clearInterval(timerInterval);
-            showScreen('result-page');
-            document.getElementById('final-score-display').innerText = score + " / " + currentQs.length;
-        }
-
-        function generateSubjectQR() {
-            document.getElementById('qrcode-output').innerHTML = "";
-            let data = JSON.stringify({subject: activeSub, questions: questionsDB[activeSub]});
-            new QRCode(document.getElementById("qrcode-output"), { text: data, width: 180, height: 180 });
-            document.getElementById('qrcode-container').classList.remove('hidden');
-        }
-
-        function startQRScanner() {
-            showScreen('qr-scan-page');
-            html5QrCode = new Html5Qrcode("qr-reader");
-            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
-                try {
-                    let data = JSON.parse(text);
-                    if(data.subject) {
-                        questionsDB[data.subject] = data.questions;
-                        localStorage.setItem('mertuleDB', JSON.stringify(questionsDB));
-                        alert(data.subject + " ጥያቄዎች በስኬት ተቀብለዋል!");
-                        stopQRScanner();
-                    }
-                } catch(e) { alert("የተሳሳተ QR ዳታ!"); }
-            });
-        }
-
-        function stopQRScanner() {
-            if(html5QrCode) html5QrCode.stop();
-            showScreen('main-menu');
         }
 
         function autoExtractData() {
@@ -381,6 +215,25 @@
                 document.getElementById('admin-optD').value = parts[4].trim();
             }
         }
+
+        function generateSubjectQR() {
+            document.getElementById('qrcode-output').innerHTML = "";
+            let data = JSON.stringify({sub: activeSub, qs: questionsDB[activeSub]});
+            new QRCode(document.getElementById("qrcode-output"), { text: data, width: 180, height: 180 });
+            document.getElementById('qrcode-container').classList.remove('hidden');
+        }
+
+        function startQRScanner() {
+            showScreen('qr-scan-page');
+            html5QrCode = new Html5Qrcode("qr-reader");
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
+                try {
+                    let data = JSON.parse(text);
+                    if(data.sub) { questionsDB[data.sub] = data.qs; localStorage.setItem('mertuleDB', JSON.stringify(questionsDB)); alert(data.sub + " ጥያቄዎች ደርሰዋል!"); stopQRScanner(); }
+                } catch(e) { alert("QR ስህተት!"); }
+            });
+        }
+        function stopQRScanner() { if(html5QrCode) html5QrCode.stop(); showScreen('main-menu'); }
     </script>
 </body>
 </html>
