@@ -4,37 +4,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mertule Mariyam Exam Prep</title>
-    
-    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIk1lcnR1bGUgTWFyaXlhbSBFeGFtIFByZXAiLAogICJzaG9ydF9uYW1lIjogIk1NIEV4YW0iLAogICJzdGFydF91cmwiOiAiLi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwZjBjMjkiLAogICJ0aGVtZV9jb2xvciI6ICIjMzAybjYzIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsaXRpY29uLmNvbS81MTIvMjk5Ny8yOTk3OTExLnBuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICAgfQogIF0KfQ==">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#302b63">
-
+    <link rel="manifest" href="manifest.json">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     
     <style>
-        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(45deg, #0f0c29, #302b63, #24243e); color: white; height: 100vh; display: flex; justify-content: center; align-items: center; text-align: center; overflow: hidden; }
-        .container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border-radius: 30px; padding: 25px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.5); width: 85%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        /* 2026 Modern Design (Glassmorphism) */
+        body {
+            margin: 0; font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
+            color: white; height: 100vh; display: flex; justify-content: center; align-items: center; text-align: center;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px);
+            border-radius: 30px; padding: 25px; border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); width: 85%; max-width: 500px;
+            max-height: 90vh; overflow-y: auto;
+        }
         .hidden { display: none !important; }
-        h1 { font-size: 1.4rem; color: #00d2ff; }
+        h1 { font-size: 1.4rem; color: #00d2ff; line-height: 1.5; }
         .creator { font-weight: bold; color: #ffd700; font-size: 1.1rem; margin-top: 15px; }
         .cap-icon { font-size: 70px; margin-bottom: 10px; }
-        button { background: linear-gradient(to right, #00d2ff, #3a7bd5); color: white; border: none; padding: 12px 20px; border-radius: 50px; font-size: 1rem; cursor: pointer; margin: 8px; transition: 0.3s; width: 85%; }
+        
+        button {
+            background: linear-gradient(to right, #00d2ff, #3a7bd5); color: white;
+            border: none; padding: 12px 20px; border-radius: 50px; font-size: 1rem;
+            cursor: pointer; margin: 8px; transition: 0.3s; width: 85%;
+        }
         button:hover { transform: scale(1.02); box-shadow: 0 0 15px #00d2ff; }
-        .option-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 15px; padding: 12px; margin: 6px 0; width: 90%; text-align: left; font-size: 1rem; color: white; cursor: pointer; }
-        .option-btn.selected { background: #00d2ff !important; color: #000; font-weight: bold; }
+        
+        .options-container { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .option-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px; padding: 12px; margin: 6px 0;
+            width: 90%; text-align: left; font-size: 1rem; color: white;
+            transition: 0.3s; cursor: pointer;
+        }
+        .option-btn.selected { background: #00d2ff; color: #000; font-weight: bold; border-color: #fff; }
+
         #timer { font-size: 2rem; color: #ff4b2b; font-weight: bold; margin-bottom: 10px; }
         .q-text { text-align: left; font-size: 1.1rem; margin-bottom: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 15px; }
-        input, select, textarea { width: 90%; padding: 10px; margin: 5px 0; border-radius: 10px; border: none; background: rgba(255,255,255,0.2); color: white; }
-        #install-btn { position: fixed; top: 10px; left: 10px; background: #27ae60; padding: 5px 15px; border-radius: 10px; font-size: 0.8rem; z-index: 9999; display: none; width: auto; }
-        #qrcode-output { background: white; padding: 10px; display: inline-block; border-radius: 10px; }
+        .back-btn { background: #636e72 !important; margin-top: 10px; }
+
+        input, select, textarea {
+            width: 90%; padding: 10px; margin: 5px 0; border-radius: 10px; border: none; background: rgba(255,255,255,0.2); color: white;
+        }
+        .smart-paste-box { background: rgba(0, 210, 255, 0.1); border: 1px dashed #00d2ff; }
+        #qr-reader { width: 100%; border-radius: 15px; margin-top: 10px; }
+        #qrcode-output { background: white; padding: 15px; display: inline-block; border-radius: 10px; margin-top: 10px; }
     </style>
 </head>
 <body>
-
-    <button id="install-btn" onclick="installApp()">ጫን / Install App</button>
 
     <div id="splash" class="container">
         <div class="cap-icon">🎓</div>
@@ -50,37 +72,44 @@
 
     <div id="qr-scan-page" class="container hidden">
         <h1>QR ስካን እያደረገ ነው...</h1>
-        <div id="qr-reader" style="width: 100%; border-radius: 15px;"></div>
-        <button onclick="stopQRScanner()" style="background: grey;">ተመለስ</button>
+        <div id="qr-reader"></div>
+        <button class="back-btn" onclick="stopQRScanner()">ተመለስ</button>
     </div>
 
     <div id="role-page" class="container hidden">
         <h1>ማን ነዎት?</h1>
         <button onclick="studentFlow()">ተማሪ (Student)</button>
         <button onclick="adminLoginFlow()">አድሚን (Admin)</button>
-        <button onclick="showScreen('main-menu')" style="background: grey;">ወደ ኋላ</button>
+        <button class="back-btn" onclick="showScreen('main-menu')">ወደ ኋላ</button>
     </div>
 
     <div id="stream-page" class="container hidden">
-        <h1>ዘርፍ ይምረጡ</h1>
+        <h1 id="stream-header">ዘርፍ ይምረጡ</h1>
         <button onclick="selectStream('Natural')">Natural Science</button>
         <button onclick="selectStream('Social')">Social Science</button>
-        <button onclick="showScreen('role-page')" style="background: grey;">ወደ ኋላ</button>
+        <button class="back-btn" onclick="showScreen('role-page')">ወደ ኋላ</button>
     </div>
 
     <div id="subject-page" class="container hidden">
-        <h1>ትምህርት ይምረጡ</h1>
+        <h1 id="subject-header">ትምህርት ይምረጡ</h1>
         <div id="subject-list"></div>
-        <button onclick="showScreen('stream-page')" style="background: grey;">ወደ ኋላ</button>
+        <button class="back-btn" onclick="showScreen('stream-page')">ወደ ኋላ</button>
     </div>
 
     <div id="admin-upload-page" class="container hidden">
         <h1 id="admin-sub-title">ጥያቄ መጫኛ</h1>
-        <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;" onchange="processImage(this)">
-        <button onclick="document.getElementById('camera-input').click()" style="background: #e67e22;">ፎቶ አንሳ (OCR)</button>
-        <textarea id="smart-paste-input" placeholder="ጽሑፉን እዚህ ይለጥፉ..."></textarea>
-        <button onclick="autoExtractData()" style="background: #3498db; width: 60%;">ዳታውን ለይ</button>
-        <hr>
+        
+        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 15px; margin-bottom: 10px;">
+            <p style="font-size: 0.8rem; margin: 5px;">📷 ከፎቶ ጽሑፍ ለማውጣት</p>
+            <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;" onchange="processImage(this)">
+            <button onclick="document.getElementById('camera-input').click()" style="background: #e67e22; font-size: 0.8rem; width: 80%;">ፎቶ አንሳ (OCR)</button>
+        </div>
+
+        <textarea id="smart-paste-input" class="smart-paste-box" placeholder="ጽሑፉን እዚህ ይለጥፉ ወይም በፎቶ ያንሱ..."></textarea>
+        <button onclick="autoExtractData()" style="background: #3498db; width: 60%; font-size: 0.8rem;">ዳታውን ለይ (Extract)</button>
+        
+        <hr style="opacity: 0.2;">
+
         <textarea id="admin-q-text" placeholder="ጥያቄው..."></textarea>
         <input type="text" id="admin-optA" placeholder="ምርጫ A">
         <input type="text" id="admin-optB" placeholder="ምርጫ B">
@@ -90,150 +119,86 @@
             <option value="">ትክክለኛ መልስ</option>
             <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
         </select>
-        <button onclick="saveAdminQuestion()" style="background: #27ae60;">መዝግብ</button>
-        <button onclick="generateSubjectQR()" style="background: #8e44ad;">QR አውጣ</button>
-        <div id="qrcode-container" class="hidden"><div id="qrcode-output"></div></div>
-        <button onclick="showScreen('subject-page')" style="background: grey;">ተመለስ</button>
+        
+        <button onclick="saveAdminQuestion()" style="background: #27ae60;">ጥያቄውን መዝግብ</button>
+        <button onclick="generateSubjectQR()" style="background: #8e44ad;">ለተማሪዎች QR አውጣ</button>
+        
+        <div id="qrcode-container" class="hidden">
+            <div id="qrcode-output"></div>
+            <p style="font-size: 0.7rem;">ተማሪዎች ይህንን ስካን እንዲያደርጉ ያድርጉ</p>
+            <button onclick="document.getElementById('qrcode-container').classList.add('hidden')" style="width: 40%; background: #636e72;">ዝጋ</button>
+        </div>
+
+        <button class="back-btn" onclick="showScreen('subject-page')">ተመለስ</button>
     </div>
 
     <div id="exam-page" class="container hidden">
         <div id="timer">60:00</div>
+        <div id="q-info-box" class="q-info"></div>
         <div id="current-question-box" class="q-text"></div>
-        <div id="options-area">
+        <div id="options-area" class="options-container">
             <div class="option-btn" id="optA" onclick="selectOption('A')"></div>
             <div class="option-btn" id="optB" onclick="selectOption('B')"></div>
             <div class="option-btn" id="optC" onclick="selectOption('C')"></div>
             <div class="option-btn" id="optD" onclick="selectOption('D')"></div>
         </div>
-        <div style="display: flex; gap: 5px;">
-             <button onclick="prevQuestion()" style="background: #e67e22;">Back</button>
-             <button onclick="nextQuestion()">Next</button>
+        <div style="display: flex; justify-content: space-around; margin-top: 15px;">
+            <button id="prev-btn" onclick="goBack()" style="width: 45%; background: #e67e22;">Back</button>
+            <button id="next-btn" onclick="nextQuestion()" style="width: 45%;">Next</button>
         </div>
+        <button id="submit-btn" onclick="finishExam()" class="hidden" style="background: #27ae60; margin-top: 15px;">ጨርስ</button>
     </div>
 
     <div id="result-page" class="container hidden">
         <h1>ውጤትዎ</h1>
-        <h2 id="final-score-display" style="font-size: 3rem; color: #ffd700;"></h2>
-        <button onclick="location.reload()">ተመለስ</button>
+        <h2 id="final-score-display" style="font-size: 2.5rem; color: #ffd700;"></h2>
+        <button onclick="location.reload()">ወደ ዋና ገጽ</button>
     </div>
 
     <script>
-        // --- 1. PWA INSTALL LOGIC ---
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('install-btn').style.display = 'block'; });
-        async function installApp() { if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') document.getElementById('install-btn').style.display = 'none'; deferredPrompt = null; } }
-        
-        // Service Worker (Offline ስራ)
-        if ('serviceWorker' in navigator) {
-            const swCode = `self.addEventListener('install', e => e.waitUntil(caches.open('v1').then(c => c.addAll(['./'])))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));`;
-            const blob = new Blob([swCode], { type: 'text/javascript' });
-            navigator.serviceWorker.register(URL.createObjectURL(blob));
+        // Data structure with LocalStorage to save questions
+        let questionsDB = JSON.parse(localStorage.getItem('mertuleDB')) || {
+            "English": [], "Maths": [], "Physics": [], "Chemistry": [], "Biology": [],
+            "Geography": [], "History": [], "Economics": []
+        };
+
+        let currentQuestions = [], currentIndex = 0, selectedAnswer = null, score = 0;
+        let timeLeft = 3600, timerInterval, isAdminMode = false, activeAdminSubject = "";
+        let html5QrCode;
+
+        setTimeout(() => showScreen('main-menu'), 3000);
+
+        function showScreen(id) {
+            document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
         }
 
-        // --- 2. CORE SYSTEM ---
-        let questionsDB = JSON.parse(localStorage.getItem('mertuleDB')) || {"English":[],"Maths":[],"Physics":[],"Chemistry":[],"Biology":[],"Geography":[],"History":[],"Economics":[]};
-        let currentQs = [], qIdx = 0, score = 0, activeSub = "", isAdmin = false, selectedAnswer = null, timerInterval, html5QrCode;
-
-        setTimeout(() => showScreen('main-menu'), 3500);
-
-        function showScreen(id) { document.querySelectorAll('.container').forEach(c => c.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
-
-        function adminLoginFlow() { if(prompt("Password:") === "Mertule Mariyam@2026") { isAdmin = true; showScreen('stream-page'); } else { alert("ስህተት!"); } }
-        function studentFlow() { isAdmin = false; showScreen('stream-page'); }
-
-        function selectStream(stream) {
-            showScreen('subject-page');
-            const list = document.getElementById('subject-list'); list.innerHTML = "";
-            let subs = stream === 'Natural' ? ["English","Maths","Physics","Chemistry","Biology"] : ["English","Maths","Geography","History","Economics"];
-            subs.forEach(s => {
-                let b = document.createElement('button'); b.innerText = s;
-                b.onclick = () => { activeSub = s; if(isAdmin) showScreen('admin-upload-page'); else startExam(s); };
-                list.appendChild(b);
-            });
-        }
-
-        // --- 3. EXAM LOGIC ---
-        function startExam(s) {
-            currentQs = questionsDB[s];
-            if(!currentQs || currentQs.length === 0) return alert("ጥያቄ አልተጫነም!");
-            qIdx = 0; score = 0; showScreen('exam-page'); startTimer(3600); loadQuestion();
-        }
-
-        function loadQuestion() {
-            selectedAnswer = null; let q = currentQs[qIdx];
-            document.getElementById('current-question-box').innerText = (qIdx + 1) + ". " + q.q;
-            document.getElementById('optA').innerText = "A) " + q.a; document.getElementById('optB').innerText = "B) " + q.b;
-            document.getElementById('optC').innerText = "C) " + q.c; document.getElementById('optD').innerText = "D) " + q.d;
-            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
-        }
-
-        function selectOption(ans) { selectedAnswer = ans; document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected')); document.getElementById('opt' + ans).classList.add('selected'); }
-
-        function nextQuestion() {
-            if(!selectedAnswer) return alert("እባክዎ መልስ ይምረጡ!");
-            if(selectedAnswer === currentQs[qIdx].correct) score++;
-            qIdx++;
-            if(qIdx < currentQs.length) loadQuestion(); else finishExam();
-        }
-
-        function prevQuestion() { if(qIdx > 0) { qIdx--; loadQuestion(); } }
-
-        function startTimer(duration) {
-            let timer = duration;
-            timerInterval = setInterval(() => {
-                let min = parseInt(timer / 60, 10); let sec = parseInt(timer % 60, 10);
-                document.getElementById('timer').textContent = (min < 10 ? "0"+min : min) + ":" + (sec < 10 ? "0"+sec : sec);
-                if (--timer < 0) finishExam();
-            }, 1000);
-        }
-
-        function finishExam() { clearInterval(timerInterval); showScreen('result-page'); document.getElementById('final-score-display').innerText = score + " / " + currentQs.length; }
-
-        // --- 4. ADMIN & SCANNER LOGIC ---
-        function saveAdminQuestion() {
-            let q = { q: document.getElementById('admin-q-text').value, a: document.getElementById('admin-optA').value, b: document.getElementById('admin-optB').value, c: document.getElementById('admin-optC').value, d: document.getElementById('admin-optD').value, correct: document.getElementById('admin-correct').value };
-            questionsDB[activeSub].push(q); localStorage.setItem('mertuleDB', JSON.stringify(questionsDB));
-            alert("ተመዝግቧል!"); document.getElementById('admin-q-text').value = "";
-        }
-
+        // --- CAMERA OCR LOGIC ---
         async function processImage(input) {
             if (input.files && input.files[0]) {
-                document.getElementById('smart-paste-input').value = "በማንበብ ላይ...";
-                const result = await Tesseract.recognize(input.files[0], 'eng');
-                document.getElementById('smart-paste-input').value = result.data.text;
-            }
-        }
-
-        function autoExtractData() {
-            let raw = document.getElementById('smart-paste-input').value;
-            let parts = raw.split(/[A-D][\)\.]/i);
-            if(parts.length >= 5) {
-                document.getElementById('admin-q-text').value = parts[0].trim();
-                document.getElementById('admin-optA').value = parts[1].trim();
-                document.getElementById('admin-optB').value = parts[2].trim();
-                document.getElementById('admin-optC').value = parts[3].trim();
-                document.getElementById('admin-optD').value = parts[4].trim();
-            }
-        }
-
-        function generateSubjectQR() {
-            document.getElementById('qrcode-output').innerHTML = "";
-            let data = JSON.stringify({sub: activeSub, qs: questionsDB[activeSub]});
-            new QRCode(document.getElementById("qrcode-output"), { text: data, width: 180, height: 180 });
-            document.getElementById('qrcode-container').classList.remove('hidden');
-        }
-
-        function startQRScanner() {
-            showScreen('qr-scan-page');
-            html5QrCode = new Html5Qrcode("qr-reader");
-            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
+                const btn = event.target;
+                const statusArea = document.getElementById('smart-paste-input');
+                statusArea.value = "ጽሑፉን ከፎቶው ላይ እያነበብኩ ነው... (ትንሽ ይጠብቁ)";
+                
                 try {
-                    let data = JSON.parse(text);
-                    if(data.sub) { questionsDB[data.sub] = data.qs; localStorage.setItem('mertuleDB', JSON.stringify(questionsDB)); alert(data.sub + " ጥያቄዎች ደርሰዋል!"); stopQRScanner(); }
-                } catch(e) { alert("QR ስህተት!"); }
-            });
+                    const result = await Tesseract.recognize(input.files[0], 'eng');
+                    statusArea.value = result.data.text;
+                    alert("ጽሑፉ በተሳካ ሁኔታ ተነቧል!");
+                } catch (e) {
+                    alert("ጽሑፉን ማንበብ አልተቻለም። እባክዎ በደንብ አብርተው ፎቶ ያንሱ።");
+                }
+            }
         }
-        function stopQRScanner() { if(html5QrCode) html5QrCode.stop(); showScreen('main-menu'); }
-    </script>
-</body>
-</html>
+
+        // --- QR SYSTEM LOGIC ---
+        function generateSubjectQR() {
+            const data = {
+                subject: activeAdminSubject,
+                questions: questionsDB[activeAdminSubject]
+            };
+            document.getElementById('qrcode-output').innerHTML = "";
+            new QRCode(document.getElementById("qrcode-output"), {
+                text: JSON.stringify(data),
+                width: 200, height: 200
+            });
+     
