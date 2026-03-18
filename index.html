@@ -3,217 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mertule Mariyam School App</title>
-    
-    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIk1lcnR1bGUgTWFyaXlhbSBTY2hvb2wgQXBwIiwKICAic2hvcnRfbmFtZSI6ICJNTS1TY2hvb2wiLAogICJzdGFydF91cmwiOiAiLi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwZjBjMjkiLAogICJ0aGVtZV9jb2xvciI6ICIjMzAybjYzIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsaXRpY29uLmNvbS81MTIvMjk5Ny8yOTk3OTExLnBuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIgogICAgfQogIF0KfQ==">
-    
+    <title>Mertule Mariyam Exam Prep</title>
+    <link rel="manifest" href="manifest.json">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
-
+    
     <style>
-        :root { --primary: #00d2ff; --secondary: #3a7bd5; --accent: #ffd700; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: linear-gradient(45deg, #0f0c29, #302b63, #24243e); color: white; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow-x: hidden; }
-        .screen { width: 100%; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+        /* 2026 Modern Design (Glassmorphism) */
+        body {
+            margin: 0; font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
+            color: white; height: 100vh; display: flex; justify-content: center; align-items: center; text-align: center;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px);
+            border-radius: 30px; padding: 25px; border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); width: 85%; max-width: 500px;
+            max-height: 90vh; overflow-y: auto;
+        }
         .hidden { display: none !important; }
+        h1 { font-size: 1.4rem; color: #00d2ff; line-height: 1.5; }
+        .creator { font-weight: bold; color: #ffd700; font-size: 1.1rem; margin-top: 15px; }
+        .cap-icon { font-size: 70px; margin-bottom: 10px; }
         
-        .shining-text { background: linear-gradient(to right, #fff, var(--accent), #fff); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s linear infinite; font-weight: bold; }
-        @keyframes shine { to { background-position: 200% center; } }
+        button {
+            background: linear-gradient(to right, #00d2ff, #3a7bd5); color: white;
+            border: none; padding: 12px 20px; border-radius: 50px; font-size: 1rem;
+            cursor: pointer; margin: 8px; transition: 0.3s; width: 85%;
+        }
+        button:hover { transform: scale(1.02); box-shadow: 0 0 15px #00d2ff; }
+        
+        .options-container { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .option-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px; padding: 12px; margin: 6px 0;
+            width: 90%; text-align: left; font-size: 1rem; color: white;
+            transition: 0.3s; cursor: pointer;
+        }
+        .option-btn.selected { background: #00d2ff; color: #000; font-weight: bold; border-color: #fff; }
 
-        .card { background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); border-radius: 30px; padding: 25px; width: 95%; max-width: 450px; border: 1px solid rgba(255,255,255,0.2); text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
-        
-        input, select, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: none; font-size: 1rem; box-sizing: border-box; }
-        input, select, textarea { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.1); }
-        button { background: linear-gradient(to right, var(--primary), var(--secondary)); color: white; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        button:hover { transform: scale(1.02); box-shadow: 0 0 15px var(--primary); }
-        
-        .nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
-        .subject-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); height: 70px; font-size: 0.9rem; }
-        
-        #announcement-bar { background: var(--accent); color: black; width: 100%; padding: 8px; position: fixed; top: 0; font-weight: bold; text-align: center; z-index: 1000; }
-        .back-btn { background: #636e72; width: auto; padding: 5px 15px; font-size: 0.8rem; margin-top: 10px; }
+        #timer { font-size: 2rem; color: #ff4b2b; font-weight: bold; margin-bottom: 10px; }
+        .q-text { text-align: left; font-size: 1.1rem; margin-bottom: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 15px; }
+        .back-btn { background: #636e72 !important; margin-top: 10px; }
+
+        input, select, textarea {
+            width: 90%; padding: 10px; margin: 5px 0; border-radius: 10px; border: none; background: rgba(255,255,255,0.2); color: white;
+        }
+        .smart-paste-box { background: rgba(0, 210, 255, 0.1); border: 1px dashed #00d2ff; }
+        #qr-reader { width: 100%; border-radius: 15px; margin-top: 10px; }
+        #qrcode-output { background: white; padding: 15px; display: inline-block; border-radius: 10px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <div id="announcement-bar" class="hidden">📢 <span id="ann-text"></span></div>
-
-    <div id="splash" class="screen">
-        <div style="font-size: 80px; margin-bottom: 20px;">🎓</div>
-        <h1 class="shining-text" style="font-size: 1.8rem;">እንኳን ወደ መርጡለ ማሪያም School App በደህና መጣችሁ!</h1>
-        <h2 class="shining-text" style="font-size: 1.3rem; margin-top: 20px;">አዘጋጅ፦ በረከት ቀናው</h2>
+    <div id="splash" class="container">
+        <div class="cap-icon">🎓</div>
+        <h1>መርጡለ ማሪያም 2ኛ ደረጃ ትምህርት ቤት የፈተና መለማመጃ</h1>
+        <p class="creator">አዘጋጅ፦ በረከት ቀናው</p>
     </div>
 
-    <div id="login-screen" class="screen hidden">
-        <div class="card">
-            <h2 class="shining-text">ይመዝገቡ / Login</h2>
-            <input type="text" id="fname" placeholder="ስም">
-            <input type="text" id="lname" placeholder="የአባት ስም">
-            <input type="number" id="phone" placeholder="ስልክ (09... የቴሌ ብቻ)">
-            <input type="number" id="age" placeholder="እድሜ">
-            <select id="gender"><option value="">ፆታ</option><option>ወንድ</option><option>ሴት</option></select>
-            <select id="role" onchange="handleRoleChange()">
-                <option value="student">ተማሪ (Student)</option>
-                <option value="teacher">መምህር (Teacher)</option>
-                <option value="admin">አስተዳደር (Admin)</option>
-            </select>
-            <div id="code-area" class="hidden">
-                <input type="password" id="access-code" placeholder="የመግቢያ ኮድ ያስገቡ">
-            </div>
-            <button onclick="performLogin()">ይግቡ / Start</button>
-        </div>
+    <div id="main-menu" class="container hidden">
+        <h1>ዋና ማውጫ</h1>
+        <button onclick="showScreen('role-page')">ጀምር / Start</button>
+        <button onclick="startQRScanner()" style="background: #9b59b6;">ጥያቄ በ QR Scan ተቀበል</button>
     </div>
 
-    <div id="grade-screen" class="screen hidden">
-        <div class="card">
-            <h2 class="shining-text">የክፍል ደረጃ ይምረጡ</h2>
-            <div class="nav-grid">
-                <button class="subject-btn" onclick="showSubjects('9')">9ኛ ክፍል (2018)</button>
-                <button class="subject-btn" onclick="showSubjects('10')">10ኛ ክፍል (2018)</button>
-                <button class="subject-btn" onclick="showSubjects('11-Natural')">11 Natural</button>
-                <button class="subject-btn" onclick="showSubjects('11-Social')">11 Social</button>
-                <button class="subject-btn" onclick="showSubjects('12-Natural')">12 Natural</button>
-                <button class="subject-btn" onclick="showSubjects('12-Social')">12 Social</button>
-            </div>
-            
-            <div id="admin-panel" class="hidden" style="margin-top: 20px; border-top: 1px solid white; padding-top: 10px;">
-                <h4 style="color: var(--accent);">የአስተዳደር ማስታወቂያ</h4>
-                <textarea id="ann-input" placeholder="ለሁሉም የሚተላለፍ መልእክት..."></textarea>
-                <button onclick="postAnnouncement()" style="background: var(--accent); color: black;">ማስታወቂያ አውጣ</button>
-            </div>
-            <button class="back-btn" onclick="logout()">Logout</button>
-        </div>
+    <div id="qr-scan-page" class="container hidden">
+        <h1>QR ስካን እያደረገ ነው...</h1>
+        <div id="qr-reader"></div>
+        <button class="back-btn" onclick="stopQRScanner()">ተመለስ</button>
     </div>
 
-    <div id="subject-screen" class="screen hidden">
-        <div class="card">
-            <h2 id="current-grade-title" class="shining-text">ትምህርቶች</h2>
-            <div id="subject-list" class="nav-grid"></div>
-            <button class="back-btn" onclick="showScreen('grade-screen')">ተመለስ</button>
-        </div>
+    <div id="role-page" class="container hidden">
+        <h1>ማን ነዎት?</h1>
+        <button onclick="studentFlow()">ተማሪ (Student)</button>
+        <button onclick="adminLoginFlow()">አድሚን (Admin)</button>
+        <button class="back-btn" onclick="showScreen('main-menu')">ወደ ኋላ</button>
     </div>
 
-    <div id="content-screen" class="screen hidden">
-        <div class="card" style="max-width: 600px;">
-            <h2 id="current-subject-title" class="shining-text">Subject</h2>
-            <div class="nav-grid">
-                <button onclick="openTab('pdf')">📄 PDF</button>
-                <button onclick="openTab('video')">🎬 Video</button>
-                <button onclick="openTab('image')">🖼️ Image</button>
-                <button onclick="openTab('chat')">💬 Text/Chat</button>
-            </div>
+    <div id="stream-page" class="container hidden">
+        <h1 id="stream-header">ዘርፍ ይምረጡ</h1>
+        <button onclick="selectStream('Natural')">Natural Science</button>
+        <button onclick="selectStream('Social')">Social Science</button>
+        <button class="back-btn" onclick="showScreen('role-page')">ወደ ኋላ</button>
+    </div>
 
-            <div id="teacher-upload-area" class="hidden" style="margin-top: 20px; border: 1px dashed var(--primary); padding: 15px; border-radius: 15px;">
-                <h4 style="margin: 0 0 10px 0;">ፋይል መጫኛ (Upload)</h4>
-                <input type="file" id="file-picker" multiple>
-                <button onclick="alert('ፋይሉ ለተማሪዎች ተለቋል!')">መዝግብ / Post</button>
-            </div>
+    <div id="subject-page" class="container hidden">
+        <h1 id="subject-header">ትምህርት ይምረጡ</h1>
+        <div id="subject-list"></div>
+        <button class="back-btn" onclick="showScreen('stream-page')">ወደ ኋላ</button>
+    </div>
 
-            <div id="resource-viewer" style="margin-top: 20px; background: rgba(0,0,0,0.3); border-radius: 15px; min-height: 150px; display: flex; align-items: center; justify-content: center;">
-                <p style="opacity: 0.6;">እዚህ ጋር ፋይሎች ይከፈታሉ...</p>
-            </div>
-            <button class="back-btn" onclick="showScreen('subject-screen')">ተመለስ</button>
+    <div id="admin-upload-page" class="container hidden">
+        <h1 id="admin-sub-title">ጥያቄ መጫኛ</h1>
+        
+        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 15px; margin-bottom: 10px;">
+            <p style="font-size: 0.8rem; margin: 5px;">📷 ከፎቶ ጽሑፍ ለማውጣት</p>
+            <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;" onchange="processImage(this)">
+            <button onclick="document.getElementById('camera-input').click()" style="background: #e67e22; font-size: 0.8rem; width: 80%;">ፎቶ አንሳ (OCR)</button>
         </div>
+
+        <textarea id="smart-paste-input" class="smart-paste-box" placeholder="ጽሑፉን እዚህ ይለጥፉ ወይም በፎቶ ያንሱ..."></textarea>
+        <button onclick="autoExtractData()" style="background: #3498db; width: 60%; font-size: 0.8rem;">ዳታውን ለይ (Extract)</button>
+        
+        <hr style="opacity: 0.2;">
+
+        <textarea id="admin-q-text" placeholder="ጥያቄው..."></textarea>
+        <input type="text" id="admin-optA" placeholder="ምርጫ A">
+        <input type="text" id="admin-optB" placeholder="ምርጫ B">
+        <input type="text" id="admin-optC" placeholder="ምርጫ C">
+        <input type="text" id="admin-optD" placeholder="ምርጫ D">
+        <select id="admin-correct">
+            <option value="">ትክክለኛ መልስ</option>
+            <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+        </select>
+        
+        <button onclick="saveAdminQuestion()" style="background: #27ae60;">ጥያቄውን መዝግብ</button>
+        <button onclick="generateSubjectQR()" style="background: #8e44ad;">ለተማሪዎች QR አውጣ</button>
+        
+        <div id="qrcode-container" class="hidden">
+            <div id="qrcode-output"></div>
+            <p style="font-size: 0.7rem;">ተማሪዎች ይህንን ስካን እንዲያደርጉ ያድርጉ</p>
+            <button onclick="document.getElementById('qrcode-container').classList.add('hidden')" style="width: 40%; background: #636e72;">ዝጋ</button>
+        </div>
+
+        <button class="back-btn" onclick="showScreen('subject-page')">ተመለስ</button>
+    </div>
+
+    <div id="exam-page" class="container hidden">
+        <div id="timer">60:00</div>
+        <div id="q-info-box" class="q-info"></div>
+        <div id="current-question-box" class="q-text"></div>
+        <div id="options-area" class="options-container">
+            <div class="option-btn" id="optA" onclick="selectOption('A')"></div>
+            <div class="option-btn" id="optB" onclick="selectOption('B')"></div>
+            <div class="option-btn" id="optC" onclick="selectOption('C')"></div>
+            <div class="option-btn" id="optD" onclick="selectOption('D')"></div>
+        </div>
+        <div style="display: flex; justify-content: space-around; margin-top: 15px;">
+            <button id="prev-btn" onclick="goBack()" style="width: 45%; background: #e67e22;">Back</button>
+            <button id="next-btn" onclick="nextQuestion()" style="width: 45%;">Next</button>
+        </div>
+        <button id="submit-btn" onclick="finishExam()" class="hidden" style="background: #27ae60; margin-top: 15px;">ጨርስ</button>
+    </div>
+
+    <div id="result-page" class="container hidden">
+        <h1>ውጤትዎ</h1>
+        <h2 id="final-score-display" style="font-size: 2.5rem; color: #ffd700;"></h2>
+        <button onclick="location.reload()">ወደ ዋና ገጽ</button>
     </div>
 
     <script>
-        let currentUser = null;
+        // Data structure with LocalStorage to save questions
+        let questionsDB = JSON.parse(localStorage.getItem('mertuleDB')) || {
+            "English": [], "Maths": [], "Physics": [], "Chemistry": [], "Biology": [],
+            "Geography": [], "History": [], "Economics": []
+        };
 
-        // --- 1. SPLASH LOGIC ---
-        setTimeout(() => {
-            const saved = localStorage.getItem('mm_user');
-            if(saved) {
-                currentUser = JSON.parse(saved);
-                showScreen('grade-screen');
-                initUserRole();
-            } else {
-                showScreen('login-screen');
-            }
-        }, 5000);
+        let currentQuestions = [], currentIndex = 0, selectedAnswer = null, score = 0;
+        let timeLeft = 3600, timerInterval, isAdminMode = false, activeAdminSubject = "";
+        let html5QrCode;
+
+        setTimeout(() => showScreen('main-menu'), 3000);
 
         function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
         }
 
-        // --- 2. LOGIN & SECURITY ---
-        function handleRoleChange() {
-            const role = document.getElementById('role').value;
-            document.getElementById('code-area').className = (role === 'student') ? 'hidden' : '';
-        }
-
-        function performLogin() {
-            const role = document.getElementById('role').value;
-            const code = document.getElementById('access-code').value;
-            const phone = document.getElementById('phone').value;
-
-            if(!phone.startsWith('09') && !phone.startsWith('07')) return alert("የቴሌ ወይም ሳፋሪኮም ስልክ ብቻ!");
-            
-            if(role === 'teacher' && code !== '121619') return alert("የመምህር ኮድ ተሳስቷል!");
-            if(role === 'admin' && code !== '12161921') return alert("የአስተዳደር ኮድ ተሳስቷል!");
-
-            currentUser = { name: document.getElementById('fname').value, role: role };
-            localStorage.setItem('mm_user', JSON.stringify(currentUser));
-            showScreen('grade-screen');
-            initUserRole();
-        }
-
-        function initUserRole() {
-            if(currentUser.role === 'admin' || currentUser.role === 'teacher') {
-                document.getElementById('teacher-upload-area').classList.remove('hidden');
-                if(currentUser.role === 'admin') document.getElementById('admin-panel').classList.remove('hidden');
+        // --- CAMERA OCR LOGIC ---
+        async function processImage(input) {
+            if (input.files && input.files[0]) {
+                const btn = event.target;
+                const statusArea = document.getElementById('smart-paste-input');
+                statusArea.value = "ጽሑፉን ከፎቶው ላይ እያነበብኩ ነው... (ትንሽ ይጠብቁ)";
+                
+                try {
+                    const result = await Tesseract.recognize(input.files[0], 'eng');
+                    statusArea.value = result.data.text;
+                    alert("ጽሑፉ በተሳካ ሁኔታ ተነቧል!");
+                } catch (e) {
+                    alert("ጽሑፉን ማንበብ አልተቻለም። እባክዎ በደንብ አብርተው ፎቶ ያንሱ።");
+                }
             }
-            displayAnn();
         }
 
-        // --- 3. NAVIGATION ---
-        function showSubjects(grade) {
-            showScreen('subject-screen');
-            document.getElementById('current-grade-title').innerText = grade + " ኛ ክፍል";
-            const list = document.getElementById('subject-list');
-            list.innerHTML = "";
-            const subjects = ["English", "Mathematics", "Biology", "Physics", "Chemistry", "History", "Geography", "Economics", "Civics", "Amharic"];
-            subjects.forEach(s => {
-                const b = document.createElement('button');
-                b.className = "subject-btn";
-                b.innerText = s;
-                b.onclick = () => {
-                    document.getElementById('current-subject-title').innerText = s;
-                    showScreen('content-screen');
-                };
-                list.appendChild(b);
+        // --- QR SYSTEM LOGIC ---
+        function generateSubjectQR() {
+            const data = {
+                subject: activeAdminSubject,
+                questions: questionsDB[activeAdminSubject]
+            };
+            document.getElementById('qrcode-output').innerHTML = "";
+            new QRCode(document.getElementById("qrcode-output"), {
+                text: JSON.stringify(data),
+                width: 200, height: 200
             });
-        }
-
-        // --- 4. ADMIN FEATURES ---
-        function postAnnouncement() {
-            const msg = document.getElementById('ann-input').value;
-            localStorage.setItem('mm_ann', msg);
-            displayAnn();
-            alert("ማስታወቂያው ለሁሉም ተማሪዎች ደርሷል!");
-        }
-
-        function displayAnn() {
-            const msg = localStorage.getItem('mm_ann');
-            if(msg) {
-                document.getElementById('announcement-bar').classList.remove('hidden');
-                document.getElementById('ann-text').innerText = msg;
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('mm_user');
-            location.reload();
-        }
-
-        // --- 5. OFFLINE PWA LOGIC ---
-        if ('serviceWorker' in navigator) {
-            const swCode = `
-                self.addEventListener('install', e => e.waitUntil(caches.open('mm-v1').then(c => c.addAll(['./']))));
-                self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
-            `;
-            const blob = new Blob([swCode], { type: 'text/javascript' });
-            navigator.serviceWorker.register(URL.createObjectURL(blob));
-        }
-    </script>
-</body>
-</html>
+     
