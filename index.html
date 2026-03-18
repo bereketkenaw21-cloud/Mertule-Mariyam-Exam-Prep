@@ -7,37 +7,30 @@
     
     <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIk1lcnR1bGUgTWFyaXlhbSBTY2hvb2wgQXBwIiwKICAic2hvcnRfbmFtZSI6ICJNTS1TY2hvb2wiLAogICJzdGFydF91cmwiOiAiLi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwZjBjMjkiLAogICJ0aGVtZV9jb2xvciI6ICIjMzAybjYzIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsaXRpY29uLmNvbS81MTIvMjk5Ny8yOTk3OTExLnBuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIgogICAgfQogIF0KfQ==">
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 
     <style>
         :root { --primary: #00d2ff; --secondary: #3a7bd5; --accent: #ffd700; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0f0c29; color: white; overflow-x: hidden; }
-        .screen { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: linear-gradient(45deg, #0f0c29, #302b63, #24243e); color: white; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow-x: hidden; }
+        .screen { width: 100%; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
         .hidden { display: none !important; }
         
-        /* የሚያምር አሸበረቀ ቀለም */
-        .shining-text {
-            background: linear-gradient(to right, #fff, #ffd700, #fff);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: shine 3s linear infinite;
-            font-weight: bold;
-        }
+        .shining-text { background: linear-gradient(to right, #fff, var(--accent), #fff); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s linear infinite; font-weight: bold; }
         @keyframes shine { to { background-position: 200% center; } }
 
-        .card { background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); border-radius: 20px; padding: 25px; width: 90%; max-width: 450px; border: 1px solid rgba(255,255,255,0.2); text-align: center; }
+        .card { background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); border-radius: 30px; padding: 25px; width: 95%; max-width: 450px; border: 1px solid rgba(255,255,255,0.2); text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
         
-        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; font-size: 1rem; }
-        input, select { background: rgba(255,255,255,0.2); color: white; }
+        input, select, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: none; font-size: 1rem; box-sizing: border-box; }
+        input, select, textarea { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.1); }
         button { background: linear-gradient(to right, var(--primary), var(--secondary)); color: white; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        button:hover { transform: scale(1.05); }
+        button:hover { transform: scale(1.02); box-shadow: 0 0 15px var(--primary); }
         
-        .back-btn { background: #636e72; width: auto; padding: 5px 15px; font-size: 0.8rem; position: absolute; top: 10px; left: 10px; }
         .nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
-        .subject-btn { background: rgba(0, 210, 255, 0.2); border: 1px solid var(--primary); height: 80px; display: flex; align-items: center; justify-content: center; }
+        .subject-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); height: 70px; font-size: 0.9rem; }
         
-        #announcement-bar { background: var(--accent); color: black; width: 100%; padding: 5px; position: fixed; top: 0; font-weight: bold; font-size: 0.8rem; }
+        #announcement-bar { background: var(--accent); color: black; width: 100%; padding: 8px; position: fixed; top: 0; font-weight: bold; text-align: center; z-index: 1000; }
+        .back-btn { background: #636e72; width: auto; padding: 5px 15px; font-size: 0.8rem; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -45,85 +38,93 @@
     <div id="announcement-bar" class="hidden">📢 <span id="ann-text"></span></div>
 
     <div id="splash" class="screen">
-        <div style="font-size: 60px;">🎓</div>
-        <h1 class="shining-text">እንኳን ወደ መርጡለ ማሪያም School App በደህና መጣችሁ!</h1>
-        <h2 class="shining-text" style="font-size: 1.2rem;">አዘጋጅ፦ በረከት ቀናው</h2>
+        <div style="font-size: 80px; margin-bottom: 20px;">🎓</div>
+        <h1 class="shining-text" style="font-size: 1.8rem;">እንኳን ወደ መርጡለ ማሪያም School App በደህና መጣችሁ!</h1>
+        <h2 class="shining-text" style="font-size: 1.3rem; margin-top: 20px;">አዘጋጅ፦ በረከት ቀናው</h2>
     </div>
 
     <div id="login-screen" class="screen hidden">
         <div class="card">
-            <h2>ይመዝገቡ</h2>
+            <h2 class="shining-text">ይመዝገቡ / Login</h2>
             <input type="text" id="fname" placeholder="ስም">
             <input type="text" id="lname" placeholder="የአባት ስም">
             <input type="number" id="phone" placeholder="ስልክ (09... የቴሌ ብቻ)">
             <input type="number" id="age" placeholder="እድሜ">
             <select id="gender"><option value="">ፆታ</option><option>ወንድ</option><option>ሴት</option></select>
             <select id="role" onchange="handleRoleChange()">
-                <option value="student">ተማሪ</option>
-                <option value="teacher">መምህር</option>
-                <option value="admin">ርዕሰ መምህር / አስተዳደር</option>
+                <option value="student">ተማሪ (Student)</option>
+                <option value="teacher">መምህር (Teacher)</option>
+                <option value="admin">አስተዳደር (Admin)</option>
             </select>
             <div id="code-area" class="hidden">
                 <input type="password" id="access-code" placeholder="የመግቢያ ኮድ ያስገቡ">
             </div>
-            <button onclick="performLogin()">ይግቡ</button>
+            <button onclick="performLogin()">ይግቡ / Start</button>
         </div>
     </div>
 
     <div id="grade-screen" class="screen hidden">
-        <button class="back-btn" onclick="showScreen('login-screen')">Logout</button>
-        <h2 class="shining-text">የክፍል ደረጃ ይምረጡ</h2>
-        <div class="nav-grid">
-            <button class="subject-btn" onclick="showSubjects('9')">9ኛ ክፍል (2018)</button>
-            <button class="subject-btn" onclick="showSubjects('10')">10ኛ ክፍል (2018)</button>
-            <button class="subject-btn" onclick="showSubjects('11-Natural')">11 Natural</button>
-            <button class="subject-btn" onclick="showSubjects('11-Social')">11 Social</button>
-            <button class="subject-btn" onclick="showSubjects('12-Natural')">12 Natural</button>
-            <button class="subject-btn" onclick="showSubjects('12-Social')">12 Social</button>
-        </div>
-        <div id="admin-tools" class="hidden" style="margin-top: 20px; width: 100%;">
-            <hr>
-            <h3>የአስተዳደር ክፍል</h3>
-            <textarea id="ann-input" placeholder="ለሁሉም የሚተላለፍ ማስታወቂያ..."></textarea>
-            <button onclick="postAnnouncement()" style="background: var(--accent); color: black;">ማስታወቂያ አውጣ</button>
+        <div class="card">
+            <h2 class="shining-text">የክፍል ደረጃ ይምረጡ</h2>
+            <div class="nav-grid">
+                <button class="subject-btn" onclick="showSubjects('9')">9ኛ ክፍል (2018)</button>
+                <button class="subject-btn" onclick="showSubjects('10')">10ኛ ክፍል (2018)</button>
+                <button class="subject-btn" onclick="showSubjects('11-Natural')">11 Natural</button>
+                <button class="subject-btn" onclick="showSubjects('11-Social')">11 Social</button>
+                <button class="subject-btn" onclick="showSubjects('12-Natural')">12 Natural</button>
+                <button class="subject-btn" onclick="showSubjects('12-Social')">12 Social</button>
+            </div>
+            
+            <div id="admin-panel" class="hidden" style="margin-top: 20px; border-top: 1px solid white; padding-top: 10px;">
+                <h4 style="color: var(--accent);">የአስተዳደር ማስታወቂያ</h4>
+                <textarea id="ann-input" placeholder="ለሁሉም የሚተላለፍ መልእክት..."></textarea>
+                <button onclick="postAnnouncement()" style="background: var(--accent); color: black;">ማስታወቂያ አውጣ</button>
+            </div>
+            <button class="back-btn" onclick="logout()">Logout</button>
         </div>
     </div>
 
     <div id="subject-screen" class="screen hidden">
-        <button class="back-btn" onclick="showScreen('grade-screen')">Back</button>
-        <h2 id="current-grade-title">ትምህርቶች</h2>
-        <div id="subject-list" class="nav-grid"></div>
+        <div class="card">
+            <h2 id="current-grade-title" class="shining-text">ትምህርቶች</h2>
+            <div id="subject-list" class="nav-grid"></div>
+            <button class="back-btn" onclick="showScreen('grade-screen')">ተመለስ</button>
+        </div>
     </div>
 
     <div id="content-screen" class="screen hidden">
-        <button class="back-btn" onclick="showScreen('subject-screen')">Back</button>
-        <h2 id="current-subject-title">Subject Name</h2>
-        <div class="nav-grid">
-            <button onclick="openTab('pdf')">📄 PDF</button>
-            <button onclick="openTab('video')">🎬 Video</button>
-            <button onclick="openTab('image')">🖼️ Image</button>
-            <button onclick="openTab('chat')">💬 Chat/Text</button>
-        </div>
-        
-        <div id="upload-area" class="hidden" style="margin-top: 20px; border: 1px dashed white; padding: 10px;">
-            <h4>ፋይል መጫኛ (መምህራን/አድሚን ብቻ)</h4>
-            <input type="file" id="file-upload" multiple>
-            <button onclick="alert('ፋይሉ ተጭኗል!')">Upload File</button>
-        </div>
+        <div class="card" style="max-width: 600px;">
+            <h2 id="current-subject-title" class="shining-text">Subject</h2>
+            <div class="nav-grid">
+                <button onclick="openTab('pdf')">📄 PDF</button>
+                <button onclick="openTab('video')">🎬 Video</button>
+                <button onclick="openTab('image')">🖼️ Image</button>
+                <button onclick="openTab('chat')">💬 Text/Chat</button>
+            </div>
 
-        <div id="display-area" style="margin-top: 20px; width: 100%; min-height: 200px; background: rgba(0,0,0,0.5);">
-            <p>የተመረጠ ፋይል የለም።</p>
+            <div id="teacher-upload-area" class="hidden" style="margin-top: 20px; border: 1px dashed var(--primary); padding: 15px; border-radius: 15px;">
+                <h4 style="margin: 0 0 10px 0;">ፋይል መጫኛ (Upload)</h4>
+                <input type="file" id="file-picker" multiple>
+                <button onclick="alert('ፋይሉ ለተማሪዎች ተለቋል!')">መዝግብ / Post</button>
+            </div>
+
+            <div id="resource-viewer" style="margin-top: 20px; background: rgba(0,0,0,0.3); border-radius: 15px; min-height: 150px; display: flex; align-items: center; justify-content: center;">
+                <p style="opacity: 0.6;">እዚህ ጋር ፋይሎች ይከፈታሉ...</p>
+            </div>
+            <button class="back-btn" onclick="showScreen('subject-screen')">ተመለስ</button>
         </div>
     </div>
 
     <script>
-        // --- 1. INITIALIZATION & SPLASH ---
         let currentUser = null;
+
+        // --- 1. SPLASH LOGIC ---
         setTimeout(() => {
-            if(localStorage.getItem('mm_user')) {
-                currentUser = JSON.parse(localStorage.getItem('mm_user'));
+            const saved = localStorage.getItem('mm_user');
+            if(saved) {
+                currentUser = JSON.parse(saved);
                 showScreen('grade-screen');
-                checkAdminFeatures();
+                initUserRole();
             } else {
                 showScreen('login-screen');
             }
@@ -134,12 +135,10 @@
             document.getElementById(id).classList.remove('hidden');
         }
 
-        // --- 2. LOGIN LOGIC ---
+        // --- 2. LOGIN & SECURITY ---
         function handleRoleChange() {
             const role = document.getElementById('role').value;
-            const codeArea = document.getElementById('code-area');
-            if(role === 'student') codeArea.classList.add('hidden');
-            else codeArea.classList.remove('hidden');
+            document.getElementById('code-area').className = (role === 'student') ? 'hidden' : '';
         }
 
         function performLogin() {
@@ -147,62 +146,66 @@
             const code = document.getElementById('access-code').value;
             const phone = document.getElementById('phone').value;
 
-            if(!phone.startsWith('09') && !phone.startsWith('07')) return alert("እባክዎ ትክክለኛ የቴሌ/ሳፋሪኮም ስልክ ያስገቡ");
+            if(!phone.startsWith('09') && !phone.startsWith('07')) return alert("የቴሌ ወይም ሳፋሪኮም ስልክ ብቻ!");
+            
+            if(role === 'teacher' && code !== '121619') return alert("የመምህር ኮድ ተሳስቷል!");
+            if(role === 'admin' && code !== '12161921') return alert("የአስተዳደር ኮድ ተሳስቷል!");
 
-            if(role === 'teacher' && code !== '121619') return alert("የመምህር መለያ ኮድ ተሳስቷል!");
-            if(role === 'admin' && code !== '12161921') return alert("የአስተዳደር መለያ ኮድ ተሳስቷል!");
-
-            currentUser = {
-                name: document.getElementById('fname').value,
-                role: role,
-                phone: phone
-            };
+            currentUser = { name: document.getElementById('fname').value, role: role };
             localStorage.setItem('mm_user', JSON.stringify(currentUser));
             showScreen('grade-screen');
-            checkAdminFeatures();
+            initUserRole();
         }
 
-        function checkAdminFeatures() {
+        function initUserRole() {
             if(currentUser.role === 'admin' || currentUser.role === 'teacher') {
-                document.getElementById('upload-area').classList.remove('hidden');
-                if(currentUser.role === 'admin') document.getElementById('admin-tools').classList.remove('hidden');
+                document.getElementById('teacher-upload-area').classList.remove('hidden');
+                if(currentUser.role === 'admin') document.getElementById('admin-panel').classList.remove('hidden');
             }
-        }
-
-        // --- 3. NAVIGATION & CONTENT ---
-        function showSubjects(grade) {
-            showScreen('subject-screen');
-            const list = document.getElementById('subject-list');
-            list.innerHTML = "";
-            const subs = ["English", "Maths", "Biology", "Physics", "Chemistry", "Civics", "Amharic"];
-            subs.forEach(s => {
-                const btn = document.createElement('button');
-                btn.className = "subject-btn";
-                btn.innerText = s;
-                btn.onclick = () => {
-                    document.getElementById('current-subject-title').innerText = s;
-                    showScreen('content-screen');
-                };
-                list.appendChild(btn);
-            });
-        }
-
-        function postAnnouncement() {
-            const txt = document.getElementById('ann-input').value;
-            localStorage.setItem('mm_announcement', txt);
             displayAnn();
         }
 
+        // --- 3. NAVIGATION ---
+        function showSubjects(grade) {
+            showScreen('subject-screen');
+            document.getElementById('current-grade-title').innerText = grade + " ኛ ክፍል";
+            const list = document.getElementById('subject-list');
+            list.innerHTML = "";
+            const subjects = ["English", "Mathematics", "Biology", "Physics", "Chemistry", "History", "Geography", "Economics", "Civics", "Amharic"];
+            subjects.forEach(s => {
+                const b = document.createElement('button');
+                b.className = "subject-btn";
+                b.innerText = s;
+                b.onclick = () => {
+                    document.getElementById('current-subject-title').innerText = s;
+                    showScreen('content-screen');
+                };
+                list.appendChild(b);
+            });
+        }
+
+        // --- 4. ADMIN FEATURES ---
+        function postAnnouncement() {
+            const msg = document.getElementById('ann-input').value;
+            localStorage.setItem('mm_ann', msg);
+            displayAnn();
+            alert("ማስታወቂያው ለሁሉም ተማሪዎች ደርሷል!");
+        }
+
         function displayAnn() {
-            const ann = localStorage.getItem('mm_announcement');
-            if(ann) {
+            const msg = localStorage.getItem('mm_ann');
+            if(msg) {
                 document.getElementById('announcement-bar').classList.remove('hidden');
-                document.getElementById('ann-text').innerText = ann;
+                document.getElementById('ann-text').innerText = msg;
             }
         }
-        displayAnn();
 
-        // --- 4. OFFLINE & PWA ---
+        function logout() {
+            localStorage.removeItem('mm_user');
+            location.reload();
+        }
+
+        // --- 5. OFFLINE PWA LOGIC ---
         if ('serviceWorker' in navigator) {
             const swCode = `
                 self.addEventListener('install', e => e.waitUntil(caches.open('mm-v1').then(c => c.addAll(['./']))));
